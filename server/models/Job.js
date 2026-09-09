@@ -11,13 +11,13 @@ const JobSchema = new mongoose.Schema(
     company: {
       type: String,
       required: [true, 'Please provide a company'],
-      maxlength: 100,
+      maxlength: [100, 'Company cannot be longer than 100 characters'],
       trim: true,
     },
     position: {
       type: String,
       required: [true, 'Please provide a position'],
-      maxlength: 100,
+      maxlength: [100, 'Position cannot be longer than 100 characters'],
       trim: true,
     },
     status: {
@@ -39,7 +39,7 @@ const JobSchema = new mongoose.Schema(
     jobLocation: {
       type: String,
       required: [true, 'Please provide a job location'],
-      maxlength: 100,
+      maxlength: [100, 'Job location cannot be longer than 100 characters'],
       trim: true,
     },
     createdBy: {

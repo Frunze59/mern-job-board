@@ -16,8 +16,8 @@ const UserSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Please provide a name'],
-      minlength: 3,
-      maxlength: 50,
+      minlength: [3, 'Name must be at least 3 characters'],
+      maxlength: [50, 'Name cannot be longer than 50 characters'],
       trim: true,
     },
     email: {
@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Please provide a password'],
-      minlength: 6,
+      minlength: [6, 'Password must be at least 6 characters'],
       // Never ship the hash to the client. Queries that need it (login) must
       // opt back in with .select('+password').
       select: false,
