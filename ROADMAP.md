@@ -33,6 +33,6 @@ grep -rn "TODO" server client/src --include=*.js --include=*.jsx
 
 ## Phase 3 — Ship
 
-- [ ] **16. README** — fill in the live URL and the "Notes / possible improvements" section.
+- [x] **16. README** — notes written; live URL still to add after deploying.
 - [ ] **17. Deploy to Render** — build `npm run build`, start `npm start`, env vars, `NODE_ENV=production`.
 - [ ] **18. Final check** — register → add job → filter/search/paginate → edit → delete → logout → 404 page.

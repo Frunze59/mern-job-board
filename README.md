@@ -4,8 +4,22 @@ A mini full‑stack **Job Board** application built with the MERN stack
 (MongoDB, Express, React, Node.js). Users register/login, then create, list,
 filter, paginate, edit and delete their own job applications.
 
-- **Live app:** _TODO — Render URL_
+- **Live app:** _not deployed yet — Render URL goes here_
 - **Repo:** https://github.com/Frunze59/mern-job-board
+
+## Features
+
+- Register and log in; passwords hashed with bcryptjs, sessions carried by a JWT
+  that expires after one day
+- Every job belongs to the user who created it — the API scopes all reads to the
+  signed-in user and refuses writes to anyone else's records
+- Add, edit and delete jobs, each with a company, position, location, status and
+  job type
+- Filter by status and job type, search by position, sort four ways and page
+  through the results, all handled server-side
+- Protected dashboard routes, with an expired or invalid session logging the
+  user out automatically
+- Responsive layout down to a phone-sized screen
 
 ## Tech stack
 
@@ -24,22 +38,26 @@ filter, paginate, edit and delete their own job applications.
 ├── .env.example          # all required environment variables (no values)
 ├── ROADMAP.md            # step-by-step implementation checklist
 ├── server/               # REST API
-│   ├── server.js         # express app, routes, error handling, production static serving
+│   ├── server.js         # express app, route mounting, production static serving
 │   ├── db/connect.js     # mongoose connection
-│   ├── models/           # User.js, Job.js
+│   ├── models/           # User.js (hashing, JWT), Job.js
 │   ├── controllers/      # authController.js, jobsController.js
 │   ├── routes/           # authRoutes.js, jobsRoutes.js
 │   ├── middleware/       # auth.js (JWT), notFound.js, errorHandler.js
 │   ├── errors/           # CustomAPIError + BadRequest / Unauthenticated / Forbidden / NotFound
 │   └── utils/            # checkPermissions.js (owner-only guard)
 └── client/               # React app (Vite)
-    ├── vite.config.js    # /api proxy -> http://localhost:5000
+    ├── vite.config.js    # dev proxy for /api, target read from server/.env PORT
     └── src/
         ├── App.jsx       # react-router-dom v6 route map
-        ├── pages/        # Landing, Register, DashboardLayout, AllJobs, AddJob, EditJob, Profile, Error, ProtectedRoute
-        ├── components/   # Navbar, Sidebar, JobCard, SearchContainer, PageBtnContainer, FormRow, FormRowSelect, Logo
-        ├── context/      # DashboardContext (user, logout)
-        └── utils/        # customFetch.js (axios instance + interceptors), constants.js
+        ├── index.css     # all styling (tokens, layout, responsive)
+        ├── pages/        # Landing, Register, DashboardLayout, ProtectedRoute,
+        │                 # AllJobs, AddJob, EditJob, Profile, Error
+        ├── components/   # JobForm (shared by add + edit), JobCard, SearchContainer,
+        │                 # PageBtnContainer, Navbar, Sidebar, FormRow, FormRowSelect, Logo
+        ├── context/      # DashboardContext (current user, logout)
+        └── utils/        # customFetch.js (axios instance + interceptors),
+                          # constants.js, formatDate.js
 ```
 
 ## Getting started (local development)
@@ -67,7 +85,7 @@ cp .env.example server/.env
 
 | Variable       | Required | Description                                                       |
 | -------------- | -------- | ----------------------------------------------------------------- |
-| `PORT`         | no       | Port for the Express server. Defaults to `5000` (Vite proxy expects this in dev). |
+| `PORT`         | no       | Port for the Express server, default `5000`. The Vite dev proxy reads this value, so changing it here is enough. |
 | `MONGO_URL`    | yes      | MongoDB Atlas connection string.                                  |
 | `JWT_SECRET`   | yes      | Secret used to sign JWTs. Use a long random string.               |
 | `JWT_LIFETIME` | no       | JWT expiry, defaults to `1d`.                                     |
@@ -145,6 +163,11 @@ Single web service serving both API and client:
 In production the Express server serves `client/dist` and falls back to
 `index.html` for non‑API routes so React Router works on refresh.
 
+**Atlas network access.** Render's free tier does not give a service a stable
+outbound IP address, so an allowlist containing only your home address will fail
+once deployed. Add `0.0.0.0/0` under Network Access in Atlas before the first
+deploy. Access is still gated by the database user's credentials.
+
 ## Troubleshooting
 
 **`EADDRINUSE: address already in use :::5000` on macOS.** Control Center's
@@ -167,6 +190,70 @@ only letters and digits in Atlas under Database Access.
 **Requests from the client 404 or hang.** Make sure the API is running and that
 `PORT` in `server/.env` matches the port the server logs on startup.
 
-## Notes / possible improvements
+## Notes
 
-_TODO — fill in before submission: what was skipped, what you would improve with more time._
+### Decisions worth explaining
+
+**`createdBy` is never read from the request body.** It is taken from the
+verified JWT on create, and update ignores it entirely, so a client cannot
+create or reassign a job to another user.
+
+**`PATCH` is a genuine partial update.** Only the fields present in the body are
+changed. Sending `{ "status": "interview" }` leaves everything else untouched.
+
+**A 401 from `/auth` does not trigger the logout interceptor.** The API answers
+wrong credentials with 401, and a blanket redirect would reload the page and
+destroy the inline error the login form is about to show. Only a 401 from
+another endpoint is treated as an expired session.
+
+**Search input is escaped before it reaches the regex.** Passing raw user text
+to `$regex` means `.*` matches everything and a pattern like `(a+)+$` can pin a
+CPU. The term is escaped so it matches literally.
+
+**Every sort order has an `_id` tiebreaker.** Sorting by `position` alone leaves
+rows with equal values in an arbitrary order that can differ between requests,
+which makes a job appear on two pages while another disappears.
+
+**Unexpected errors return a generic message.** Deliberate errors keep their own
+text, but anything unrecognised is logged server-side and answered with
+`Something went wrong, try again later`, so stack traces and driver internals
+never reach the client.
+
+**`GET /api/v1/jobs/:id` was added.** The brief's route table does not include
+it, but without it the Edit page can only be filled from router state, which is
+lost on a refresh. The route reuses the same ownership check as update and
+delete.
+
+### What I skipped
+
+- **No automated test suite.** Every step was verified against a real MongoDB and
+  a real browser, and the throwaway scripts covered the API surface, the
+  ownership rules and the query features. None of that is committed as a
+  runnable `npm test`, which is the first thing I would add.
+- **The token lives in `localStorage`.** The brief asks for the token in the
+  response body rather than a cookie, so this follows it. It does mean the token
+  is readable by any script on the page, and an `httpOnly` cookie with a refresh
+  token would be the safer design.
+- **No rate limiting on the auth endpoints**, so nothing slows down repeated
+  login attempts.
+- **The status and job type values are declared twice**, once in the Mongoose
+  schema and once in the client constants. They are commented to point at each
+  other, but nothing enforces that they stay in step.
+- **Pagination renders one button per page.** Fine for a personal job list;
+  with hundreds of pages it would need truncating.
+- **The profile page is read-only**, matching the brief. There is no endpoint to
+  change a name, email or password.
+
+### With more time
+
+1. Add automated tests: Supertest against an in-memory MongoDB for the API, and
+   React Testing Library for the forms and the filter behaviour.
+2. Move authentication to an `httpOnly` cookie with a short-lived access token
+   and a refresh token.
+3. Add `helmet`, `express-rate-limit` and input sanitisation.
+4. Share the status and job type enums between client and server so they cannot
+   drift apart.
+5. Replace the loading text with skeleton cards, and update the list optimistically
+   on delete rather than refetching.
+6. Add the stats view the brief hints at: counts per status, and applications
+   over time.
