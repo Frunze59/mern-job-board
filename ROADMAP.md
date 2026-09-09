@@ -13,7 +13,7 @@ grep -rn "TODO" server client/src --include=*.js --include=*.jsx
 ## Phase 1 — Backend
 
 - [ ] **1. Environment** — create `server/.env` from `.env.example`, add Atlas `MONGO_URL` and a `JWT_SECRET`. `npm run server` should log "Server is listening…".
-- [ ] **2. User model** (`server/models/User.js`) — schema fields, `pre('save')` bcrypt hash, `createJWT()`, `comparePassword()`.
+- [x] **2. User model** (`server/models/User.js`) — schema fields, `pre('save')` bcrypt hash, `createJWT()`, `comparePassword()`.
 - [ ] **3. Auth controller** (`server/controllers/authController.js`) — `register` (201) and `login` (200/401). Test with curl/Postman.
 - [ ] **4. Auth middleware** (`server/middleware/auth.js`) — verify Bearer JWT, set `req.user.userId`, throw `UnauthenticatedError`.
 - [ ] **5. Job model** (`server/models/Job.js`) — fields, enums, defaults, `createdBy` ref.
