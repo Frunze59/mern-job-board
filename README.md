@@ -4,7 +4,9 @@ A mini full‑stack **Job Board** application built with the MERN stack
 (MongoDB, Express, React, Node.js). Users register/login, then create, list,
 filter, paginate, edit and delete their own job applications.
 
-- **Live app:** _not deployed yet — Render URL goes here_
+- **Live app:** https://mern-job-board-e1td.onrender.com
+- **Note:** the app is on Render's free tier, so the first request after a
+  period of inactivity wakes the service and can take up to a minute.
 - **Repo:** https://github.com/Frunze59/mern-job-board
 
 ## Features
@@ -238,6 +240,14 @@ never reach the client.
 it, but without it the Edit page can only be filled from router state, which is
 lost on a refresh. The route reuses the same ownership check as update and
 delete.
+
+### Verified against the deployment
+
+The full API surface and the whole user journey were exercised against the live
+URL above: register and login including the failure paths, create, list, filter,
+search, sort, paginate, edit and delete, ownership rejections between two
+accounts, logout, the protected-route redirect and the 404 page. Deep links and
+a hard refresh resolve correctly, and the browser console is clean.
 
 ### What I skipped
 
