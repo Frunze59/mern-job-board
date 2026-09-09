@@ -1,0 +1,23 @@
+# Render blueprint. Deploy with: New > Blueprint, then point Render at this repo.
+# The two secrets are marked sync:false, so Render prompts for them instead of
+# reading them from this file. Never put real values here.
+services:
+  - type: web
+    name: mern-job-board
+    runtime: node
+    plan: free
+    # Installs both packages and builds the client into client/dist.
+    # The client install passes --include=dev because vite is a devDependency
+    # and NODE_ENV=production would otherwise skip it.
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_LIFETIME
+        value: 1d
+      - key: MONGO_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false

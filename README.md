@@ -154,11 +154,26 @@ Response: `{ "jobs": [...], "totalJobs": 42, "numOfPages": 5 }`
 
 ## Deployment (Render)
 
-Single web service serving both API and client:
+A single web service serves both the API and the built client. The repo includes
+a `render.yaml` blueprint, so the quickest route is **New > Blueprint** in Render
+pointed at this repo; it will prompt for the two secrets. To configure a web
+service by hand instead:
 
-- **Build command:** `npm run build`
-- **Start command:** `npm start`
-- **Environment:** set `MONGO_URL`, `JWT_SECRET`, `JWT_LIFETIME`, `NODE_ENV=production`
+| Setting | Value |
+| ------- | ----- |
+| Runtime | Node |
+| Build command | `npm run build` |
+| Start command | `npm start` |
+| Health check path | `/api/v1/health` |
+
+Environment variables: `NODE_ENV=production`, `JWT_LIFETIME=1d`, plus your real
+`MONGO_URL` and `JWT_SECRET`. Do not set `PORT` — Render assigns it and the
+server reads it from the environment.
+
+**Why the build command installs dev dependencies for the client.** Setting
+`NODE_ENV=production` makes `npm install` skip `devDependencies`, and `vite`
+lives there, so a plain install leaves the build with `vite: not found`. The
+build script passes `--include=dev` for the client to avoid that.
 
 In production the Express server serves `client/dist` and falls back to
 `index.html` for non‑API routes so React Router works on refresh.
