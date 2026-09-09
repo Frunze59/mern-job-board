@@ -333,3 +333,7 @@ a {
   color: var(--grey-500);
   font-size: 0.9rem;
 }
+.form-hint-left {
+  text-align: left;
+  margin-top: 1rem;
+}
