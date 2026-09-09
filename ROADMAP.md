@@ -29,7 +29,7 @@ grep -rn "TODO" server client/src --include=*.js --include=*.jsx
 - [x] **12. Add Job page** (`client/src/pages/AddJob.jsx`) — shared `JobForm` component, POST, feedback.
 - [x] **13. All Jobs page** (`client/src/pages/AllJobs.jsx`) — fetch with filters, render `JobCard`s, delete, `SearchContainer`, `PageBtnContainer`.
 - [x] **14. Edit Job page** (`client/src/pages/EditJob.jsx`) — prefill via `GET /jobs/:id` + PATCH (consider a shared `JobForm` component).
-- [ ] **15. Styling** — `client/src/index.css` has base tokens; add layout / responsive tweaks.
+- [x] **15. Styling** — `client/src/index.css` has base tokens; add layout / responsive tweaks.
 
 ## Phase 3 — Ship
 

@@ -1,7 +1,7 @@
 import { Link, useRouteError } from 'react-router-dom';
 
 /**
- * 404 / error page with a back-to-home link.
+ * 404 / error page with a way back home.
  */
 const Error = () => {
   const error = useRouteError();
@@ -11,8 +11,10 @@ const Error = () => {
       <main className="error-page">
         <h1>404</h1>
         <h3>Page not found</h3>
-        <p>We can't seem to find the page you're looking for.</p>
-        <Link to="/">back home</Link>
+        <p>We can&apos;t find the page you&apos;re looking for.</p>
+        <Link to="/" className="btn">
+          back home
+        </Link>
       </main>
     );
   }
@@ -20,7 +22,10 @@ const Error = () => {
   return (
     <main className="error-page">
       <h3>Something went wrong</h3>
-      <Link to="/">back home</Link>
+      <p>An unexpected error occurred. Please try again.</p>
+      <Link to="/" className="btn">
+        back home
+      </Link>
     </main>
   );
 };
