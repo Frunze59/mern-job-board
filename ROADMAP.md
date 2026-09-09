@@ -12,12 +12,12 @@ grep -rn "TODO" server client/src --include=*.js --include=*.jsx
 
 ## Phase 1 — Backend
 
-- [ ] **1. Environment** — create `server/.env` from `.env.example`, add Atlas `MONGO_URL` and a `JWT_SECRET`. `npm run server` should log "Server is listening…".
+- [x] **1. Environment** — create `server/.env` from `.env.example`, add Atlas `MONGO_URL` and a `JWT_SECRET`. `npm run server` should log "Server is listening…".
 - [x] **2. User model** (`server/models/User.js`) — schema fields, `pre('save')` bcrypt hash, `createJWT()`, `comparePassword()`.
 - [x] **3. Auth controller** (`server/controllers/authController.js`) — `register` (201) and `login` (200/401). Test with curl/Postman.
 - [x] **4. Auth middleware** (`server/middleware/auth.js`) — verify Bearer JWT, set `req.user.userId`, throw `UnauthenticatedError`.
 - [x] **5. Job model** (`server/models/Job.js`) — fields, enums, defaults, `createdBy` ref.
-- [ ] **6. Jobs CRUD** (`server/controllers/jobsController.js`) — `createJob`, `updateJob`, `deleteJob` with `checkPermissions` (`server/utils/checkPermissions.js`).
+- [x] **6. Jobs CRUD** (`server/controllers/jobsController.js`) — `createJob`, `updateJob`, `deleteJob` with `checkPermissions` (`server/utils/checkPermissions.js`).
 - [ ] **7. Query features** — `getAllJobs`: status / jobType filters, search regex, sort map, pagination, `{ jobs, totalJobs, numOfPages }`.
 - [ ] **8. Error handler polish** (`server/middleware/errorHandler.js`) — Mongoose ValidationError, duplicate key 11000, CastError.
 
