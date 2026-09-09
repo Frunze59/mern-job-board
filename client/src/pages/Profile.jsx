@@ -1,16 +1,31 @@
-// import { useDashboardContext } from '../context/DashboardContext';
+import { useDashboardContext } from '../context/DashboardContext';
 
 /**
- * /dashboard/profile - show name and email of the logged-in user.
- *
- * TODO: read user from context (stored in localStorage at login/register).
+ * /dashboard/profile - name and email of the signed-in user.
+ * The details come from the copy saved at login; the API returns no other
+ * profile fields.
  */
 const Profile = () => {
+  const { user } = useDashboardContext();
+
+  if (!user) {
+    return (
+      <section>
+        <h2>Profile</h2>
+        <p>No profile details found. Please log in again.</p>
+      </section>
+    );
+  }
+
   return (
-    <section>
+    <section className="profile">
       <h2>Profile</h2>
-      <p>Name: {/* user.name */}</p>
-      <p>Email: {/* user.email */}</p>
+      <dl className="profile-details">
+        <dt>Name</dt>
+        <dd>{user.name}</dd>
+        <dt>Email</dt>
+        <dd>{user.email}</dd>
+      </dl>
     </section>
   );
 };
