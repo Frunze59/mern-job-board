@@ -1,22 +1,47 @@
 /**
- * Pagination controls: prev / next + "page X of Y".
- * props: page, numOfPages, onPageChange
+ * Pagination controls: prev / next plus a numbered button per page.
+ * Prev and next stop at the ends rather than wrapping around.
  */
-const PageBtnContainer = ({ page = 1, numOfPages = 1, onPageChange }) => {
-  const prev = () => onPageChange?.(page === 1 ? numOfPages : page - 1);
-  const next = () => onPageChange?.(page === numOfPages ? 1 : page + 1);
+const PageBtnContainer = ({ page, numOfPages, onPageChange }) => {
+  const pages = Array.from({ length: numOfPages }, (_, index) => index + 1);
 
   return (
     <section className="pagination">
-      <button type="button" className="btn" onClick={prev}>
+      <button
+        type="button"
+        className="btn btn-small"
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+      >
         prev
       </button>
-      <span>
-        page {page} of {numOfPages}
-      </span>
-      <button type="button" className="btn" onClick={next}>
+
+      <div className="page-numbers">
+        {pages.map((pageNumber) => (
+          <button
+            key={pageNumber}
+            type="button"
+            className={`btn btn-small ${pageNumber === page ? '' : 'btn-muted'}`}
+            onClick={() => onPageChange(pageNumber)}
+            aria-current={pageNumber === page ? 'page' : undefined}
+          >
+            {pageNumber}
+          </button>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        className="btn btn-small"
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= numOfPages}
+      >
         next
       </button>
+
+      <span className="page-status">
+        page {page} of {numOfPages}
+      </span>
     </section>
   );
 };

@@ -1,8 +1,16 @@
 /**
  * Labelled text input.
- * props: type, name, labelText?, value, onChange, autoComplete?
+ * props: type, name, labelText?, value, onChange, autoComplete?, required?
  */
-const FormRow = ({ type, name, labelText, value, onChange, autoComplete }) => {
+const FormRow = ({
+  type,
+  name,
+  labelText,
+  value,
+  onChange,
+  autoComplete,
+  required = true,
+}) => {
   return (
     <div className="form-row">
       <label htmlFor={name} className="form-label">
@@ -16,7 +24,7 @@ const FormRow = ({ type, name, labelText, value, onChange, autoComplete }) => {
         value={value}
         onChange={onChange}
         autoComplete={autoComplete}
-        required
+        required={required}
       />
     </div>
   );

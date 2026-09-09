@@ -253,3 +253,83 @@ a {
   align-self: end;
   height: 35px;
 }
+
+/* ---------- job list ---------- */
+.search-container {
+  margin-bottom: 1.5rem;
+}
+.search-container .form {
+  padding: 1.5rem 2rem;
+}
+.jobs-count {
+  margin: 0 0 1rem;
+  text-transform: none;
+  color: var(--grey-500);
+}
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+.job-card-header h4 {
+  margin: 0;
+}
+.job-company {
+  margin: 0.25rem 0 0;
+  color: var(--grey-500);
+}
+.job-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--grey-500);
+}
+.job-info .status {
+  justify-self: start;
+}
+.job-actions {
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid var(--grey-100);
+  padding-top: 1rem;
+}
+.btn-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+.btn-danger {
+  background: var(--red-dark);
+}
+.btn-danger:hover {
+  background: #7f1616;
+}
+.btn-muted {
+  background: var(--grey-500);
+}
+.btn-muted:hover {
+  background: var(--grey-900);
+}
+.empty-state {
+  color: var(--grey-500);
+}
+
+/* ---------- pagination ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+.page-numbers {
+  display: flex;
+  gap: 0.25rem;
+}
+.page-status {
+  margin-left: auto;
+  color: var(--grey-500);
+  font-size: 0.9rem;
+}

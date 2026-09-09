@@ -27,7 +27,7 @@ grep -rn "TODO" server client/src --include=*.js --include=*.jsx
 - [x] **10. Register / Login page** (`client/src/pages/Register.jsx`) — toggle forms, call API, store token + user in `localStorage`, redirect to `/dashboard`, inline errors.
 - [x] **11. Dashboard context** (`client/src/context/DashboardContext.jsx`) — load user, `logout()`; wire Navbar logout and Profile page.
 - [x] **12. Add Job page** (`client/src/pages/AddJob.jsx`) — shared `JobForm` component, POST, feedback.
-- [ ] **13. All Jobs page** (`client/src/pages/AllJobs.jsx`) — fetch with filters, render `JobCard`s, delete, `SearchContainer`, `PageBtnContainer`.
+- [x] **13. All Jobs page** (`client/src/pages/AllJobs.jsx`) — fetch with filters, render `JobCard`s, delete, `SearchContainer`, `PageBtnContainer`.
 - [ ] **14. Edit Job page** (`client/src/pages/EditJob.jsx`) — prefill via `GET /jobs/:id` + PATCH (consider a shared `JobForm` component).
 - [ ] **15. Styling** — `client/src/index.css` has base tokens; add layout / responsive tweaks.
 

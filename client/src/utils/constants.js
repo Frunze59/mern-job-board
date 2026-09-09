@@ -25,3 +25,15 @@ export const EMPTY_JOB = {
   status: JOB_STATUS.PENDING,
   jobType: JOB_TYPE.FULL_TIME,
 };
+
+/** 'all' is the API's wildcard for the status and jobType filters. */
+export const ALL = 'all';
+
+/** Starting state for the All Jobs filter bar. */
+export const DEFAULT_JOB_FILTERS = {
+  search: '',
+  status: ALL,
+  jobType: ALL,
+  sort: JOB_SORT_BY.NEWEST_FIRST,
+  page: 1,
+};
