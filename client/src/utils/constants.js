@@ -16,3 +16,12 @@ export const JOB_SORT_BY = {
   ASCENDING: 'a-z',
   DESCENDING: 'z-a',
 };
+
+/** Blank job used to seed the Add Job form. */
+export const EMPTY_JOB = {
+  position: '',
+  company: '',
+  jobLocation: '',
+  status: JOB_STATUS.PENDING,
+  jobType: JOB_TYPE.FULL_TIME,
+};
