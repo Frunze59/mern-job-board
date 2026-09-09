@@ -14,7 +14,7 @@ grep -rn "TODO" server client/src --include=*.js --include=*.jsx
 
 - [ ] **1. Environment** — create `server/.env` from `.env.example`, add Atlas `MONGO_URL` and a `JWT_SECRET`. `npm run server` should log "Server is listening…".
 - [x] **2. User model** (`server/models/User.js`) — schema fields, `pre('save')` bcrypt hash, `createJWT()`, `comparePassword()`.
-- [ ] **3. Auth controller** (`server/controllers/authController.js`) — `register` (201) and `login` (200/401). Test with curl/Postman.
+- [x] **3. Auth controller** (`server/controllers/authController.js`) — `register` (201) and `login` (200/401). Test with curl/Postman.
 - [ ] **4. Auth middleware** (`server/middleware/auth.js`) — verify Bearer JWT, set `req.user.userId`, throw `UnauthenticatedError`.
 - [ ] **5. Job model** (`server/models/Job.js`) — fields, enums, defaults, `createdBy` ref.
 - [ ] **6. Jobs CRUD** (`server/controllers/jobsController.js`) — `createJob`, `updateJob`, `deleteJob` with `checkPermissions` (`server/utils/checkPermissions.js`).
