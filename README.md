@@ -144,6 +144,28 @@ Single web service serving both API and client:
 In production the Express server serves `client/dist` and falls back to
 `index.html` for non‑API routes so React Router works on refresh.
 
+## Troubleshooting
+
+**`EADDRINUSE: address already in use :::5000` on macOS.** Control Center's
+AirPlay Receiver listens on port 5000. Either turn it off in
+System Settings > General > AirDrop & Handoff > AirPlay Receiver, or set
+`PORT=5001` in `server/.env`. The Vite dev proxy reads `PORT` from that file,
+so no other change is needed.
+
+Check what holds the port with:
+
+```bash
+lsof -nP -iTCP:5000 -sTCP:LISTEN
+```
+
+**`MongoServerError: bad auth` / authentication failed.** The password in
+`MONGO_URL` is wrong, or it contains a character that breaks URL parsing
+(`@ : / ? # %` or a space). Percent-encode it, or regenerate a password using
+only letters and digits in Atlas under Database Access.
+
+**Requests from the client 404 or hang.** Make sure the API is running and that
+`PORT` in `server/.env` matches the port the server logs on startup.
+
 ## Notes / possible improvements
 
 _TODO — fill in before submission: what was skipped, what you would improve with more time._
