@@ -3,20 +3,56 @@ import mongoose from 'mongoose';
 /**
  * Job model
  *
- * Fields:
- *  - company      String, required
- *  - position     String, required
- *  - status       enum: pending | interview | declined   (default: pending)
- *  - jobType      enum: full-time | part-time | remote   (default: full-time)
- *  - jobLocation  String, required
- *  - createdBy    ObjectId ref 'User', required
- *  - timestamps
+ * The status and jobType values must stay in sync with the selects on the
+ * client (see client/src/utils/constants.js).
  */
 const JobSchema = new mongoose.Schema(
   {
-    // TODO: define company, position, status, jobType, jobLocation, createdBy
+    company: {
+      type: String,
+      required: [true, 'Please provide a company'],
+      maxlength: 100,
+      trim: true,
+    },
+    position: {
+      type: String,
+      required: [true, 'Please provide a position'],
+      maxlength: 100,
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: {
+        values: ['pending', 'interview', 'declined'],
+        message: '{VALUE} is not a supported status',
+      },
+      default: 'pending',
+    },
+    jobType: {
+      type: String,
+      enum: {
+        values: ['full-time', 'part-time', 'remote'],
+        message: '{VALUE} is not a supported job type',
+      },
+      default: 'full-time',
+    },
+    jobLocation: {
+      type: String,
+      required: [true, 'Please provide a job location'],
+      maxlength: 100,
+      trim: true,
+    },
+    createdBy: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Please provide a user'],
+    },
   },
   { timestamps: true }
 );
+
+// Every jobs query is scoped to the owner and sorted or filtered on top of
+// that, so index createdBy alongside createdAt to keep GET /jobs cheap.
+JobSchema.index({ createdBy: 1, createdAt: -1 });
 
 export default mongoose.model('Job', JobSchema);
