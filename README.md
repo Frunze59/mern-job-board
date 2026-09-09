@@ -113,6 +113,7 @@ Tokens expire after 1 day. Send them as `Authorization: Bearer <token>`.
 | Method | Path   | Description                                   |
 | ------ | ------ | --------------------------------------------- |
 | GET    | `/`    | List the logged‑in user's jobs (see filters)  |
+| GET    | `/:id` | Get one job (owner only) — `200 { job }`      |
 | POST   | `/`    | Create a job — `201 { job }`                  |
 | PATCH  | `/:id` | Update a job (owner only) — `200 { job }`     |
 | DELETE | `/:id` | Delete a job (owner only) — `200 { msg }`     |

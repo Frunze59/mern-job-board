@@ -159,3 +159,48 @@ a {
   font-size: 1.5rem;
   color: var(--primary-500);
 }
+
+/* ---------- alerts ---------- */
+.alert {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+.alert-danger {
+  color: var(--red-dark);
+  background: var(--red-light);
+}
+.alert-success {
+  color: var(--green-dark);
+  background: var(--green-light);
+}
+
+/* ---------- form extras ---------- */
+.form-page {
+  min-height: 100vh;
+  display: grid;
+  align-items: center;
+}
+.form-logo {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.form-hint {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+}
+.btn-link {
+  background: transparent;
+  border: transparent;
+  color: var(--primary-500);
+  cursor: pointer;
+  letter-spacing: inherit;
+  font-size: inherit;
+  padding-left: 0.25rem;
+}
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

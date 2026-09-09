@@ -102,6 +102,16 @@ export const getAllJobs = async (req, res) => {
 };
 
 /**
+ * GET /api/v1/jobs/:id
+ * 200 -> { job } | 403 not owner | 404 not found
+ * Used by the Edit Job page to prefill its form on a fresh page load.
+ */
+export const getJob = async (req, res) => {
+  const job = await findOwnedJob(req.params.id, req.user);
+  res.status(StatusCodes.OK).json({ job });
+};
+
+/**
  * POST /api/v1/jobs
  * body: { company, position, jobLocation, status?, jobType? }
  * 201 -> { job }
