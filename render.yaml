@@ -21,6 +21,8 @@ services:
         value: production
       - key: JWT_LIFETIME
         value: 1d
+      # Invite links point at the service's own origin when this is unset,
+      # which is correct here because the API serves the client.
       - key: MONGO_URL
         sync: false
       - key: JWT_SECRET

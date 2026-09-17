@@ -60,7 +60,7 @@ smaller half of the grade.
 ## Phase 5 — Features
 
 - [x] **23. Migration** — `runMigration()` with per-user isolation, a resume rule for users whose jobs were never moved, a jobs-without-author warning, and `--dry-run` / `MIGRATE_DRY_RUN=1`. `render.yaml` start command is `npm run migrate && npm start`. 25 tests in `migration.test.js`, plus a rehearsal on data written by the real v1 code. **After merging, check the start command in the Render dashboard** (Settings); a blueprint sync should apply it, a hand-configured service will not.
-- [ ] **24. Orgs endpoints** — `GET /orgs`, `POST /orgs`, `GET /orgs/:orgId/members`, `POST /orgs/:orgId/invitations` (owner only, returns `inviteUrl`). Add `CLIENT_URL` to `.env.example`.
+- [x] **24. Orgs endpoints** — `GET /orgs` (personal first, with role), `POST /orgs` (unique slug, owner membership, rolls back the org if the membership fails), `GET /orgs/:orgId/members` (any member), `POST /orgs/:orgId/invitations` (owner only, returns `inviteUrl`, supersedes a pending invite for the same address). `CLIENT_URL` added to `.env.example`. 25 + 11 tests.
 - [ ] **25. Accept invitation** — `GET /invitations/:token`, `POST /invitations/:token/accept`, both branches, 404 / 410 / 403 paths. Tests in `invitations.test.js`.
 - [ ] **26. Stats** — `buildStatsPipeline(orgId, now)` + `getStats`. Deterministic fixture test with a fixed `now`. Confirm `explain()` shows the index.
 - [ ] **27. Seed + bench** — `scripts/seed-team.js` (refuse / `SEED_FORCE=1`), `scripts/bench-stats.js`. Run both against a dev database; save the p95 output for the PR.

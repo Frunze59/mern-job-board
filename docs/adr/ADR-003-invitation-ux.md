@@ -14,7 +14,7 @@ Sending email is out of scope.
 token. A URL is what the owner actually pastes into Slack or an email; a token
 would make every client rebuild the same string. The token is 32 random bytes
 and only its SHA-256 hash is stored, so a database leak cannot be turned into
-memberships. It expires in 7 days and is single-use.
+memberships. It expires in 7 days and is single-use. Re-inviting an address replaces any pending invitation, so a lost link can be reissued and only the newest token works. `CLIENT_URL` sets the link's base; without it the request's own origin is used, which is right in production because the API serves the client.
 
 `POST /invitations/:token/accept` branches on the request, not on the user:
 
