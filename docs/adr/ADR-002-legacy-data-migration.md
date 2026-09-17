@@ -4,38 +4,40 @@
 
 ## Context
 
-Existing users and their jobs predate organizations. `Job.organization`
-becomes required and is the source of truth for permissions, so every old job
-must land in an org before the v2 code serves a single request, and the
-migration must be safe to run on every deploy.
+Existing jobs predate organizations, and v2 only lists jobs that belong to
+one. They must land in an org before v2 serves requests, on every deploy.
 
 ## Decision
 
-`server/migrations/001-orgs.js` gives each user without a membership a
-"Personal" org, an `owner` membership, and moves their jobs into it. It runs
-in the Render start command ahead of the server: `npm run migrate && npm start`.
+`001-orgs` gives each user a Personal org with an owner membership and moves
+their unassigned jobs into it. Render runs `npm run migrate && npm start`;
+the free plan has no separate pre-deploy step.
 
-Idempotency is enforced by the database, not by promises in code:
+**Idempotency is enforced by indexes, not by care.** A unique partial index
+on `Organization.personalFor` refuses a second Personal org, a unique
+`(user, organization)` index refuses a second membership, and only jobs with
+no organization are updated.
 
-- `Organization.personalFor` carries a **unique partial index**, so a second
-  Personal org for the same user is impossible even if the script crashes
-  between creating the org and creating the membership.
-- `Membership` has a unique `(user, organization)` index.
-- Jobs are matched with `organization: { $exists: false }`, so a moved job is
-  never touched again.
+**I deviated from the brief's skip rule.** Skipping every user who has a
+membership would strand jobs if a run crashed after the membership but before
+the job update. A user is skipped only when they have a membership *and*
+nothing left to move.
 
-Each user is processed independently. A **partial failure** leaves every
-other user complete and the failed one untouched; the rerun finds the
-half-made Personal org through `personalFor` and finishes it.
+**Failures are isolated per user.** One user's error is logged, the rest
+finish, and the rerun completes it. Any failure exits 1 and blocks startup:
+a half-migrated server is worse than none.
 
-Why not create the Personal org lazily on first request? That hides a write
-inside a read path, races under concurrent requests, and leaves stats and
-listing broken until that first request happens. Why not a transaction?
-Atlas supports them, but the in-memory test server needs replica-set setup
-to match; idempotent per-user steps give the same safety with less machinery.
+**No downtime.** The migration only adds data, and v1 still finds jobs by
+`createdBy`, so the old instance serves correctly while the new one migrates.
+A rehearsal against real v1 code showed the cost: a job created through v1
+*after* the migration stays unassigned until the next deploy's run sweeps it
+up. On a single instance that window is seconds.
+
+Rejected: creating orgs lazily on first request (a write hidden in a read
+path, and it races) and transactions (the in-memory test database has no
+replica set; per-user idempotent steps give the same safety).
 
 ## Consequences
 
-A failing migration blocks the deploy. That is intended: a half-migrated app
-that is running is worse than one that refused to start. The script must exit
-0 when there is nothing to do, and its summary line is the deploy's evidence.
+`npm run migrate:dry-run` shows exactly what a deploy will do, so it can be
+checked against production first.

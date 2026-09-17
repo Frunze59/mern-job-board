@@ -92,10 +92,20 @@ does not run by default. The org-and-membership step is one shared function,
 call twice and repairs an org whose membership went missing.
 
 **Migration runs before the server starts, per user, idempotent by index.**
-See ADR-002. Short version: the deploy command becomes
-`npm run migrate && npm start`; a broken migration stops the deploy, which is
-the right failure. Lazy creation on first request was rejected because it
-hides a write in a read path and races.
+See ADR-002. The Render start command is `npm run migrate && npm start`, so a
+failed migration stops the deploy instead of starting a half-migrated app.
+Two things differ from the brief's wording, both found by rehearsing the
+upgrade on data written by the real v1 code:
+
+- A user with a membership is still processed if they have jobs left to move.
+  Otherwise a run that crashed between the two steps would strand those jobs.
+- The old version keeps serving while the new one migrates. A job it creates
+  in that window has no org until the next deploy's migration sweeps it up.
+
+`npm run migrate:dry-run` reports what would change without writing. The root
+script forwards arguments with a trailing `--`; without it npm swallowed
+`--dry-run` as its own flag and the "dry run" wrote to the database.
+`MIGRATE_DRY_RUN=1` works too, and cannot be swallowed.
 
 **Seed script refuses a non-empty database unless forced.**
 This is the brief's second deliberate ambiguity. Wiping silently is how someone

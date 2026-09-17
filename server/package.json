@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "migrate": "node migrations/001-orgs.js",
     "seed": "node scripts/seed-team.js",
-    "bench:stats": "node scripts/bench-stats.js"
+    "bench:stats": "node scripts/bench-stats.js",
+    "migrate:dry-run": "node migrations/001-orgs.js --dry-run"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
