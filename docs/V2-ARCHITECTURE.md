@@ -35,7 +35,7 @@ nothing about HTTP headers lives in models.
 User ──< Membership >── Organization ──< Job
              role                │           createdBy (audit only)
                                  └──< Invitation (email, role, tokenHash, expiresAt, status)
-Organization.personalFor ──► User   (unique, sparse: only on "Personal" orgs)
+Organization.personalFor ──► User   (unique partial index: only on "Personal" orgs)
 ```
 
 ## The decisions, and the road not taken
@@ -48,7 +48,7 @@ indexed lookup, and the client just changes one localStorage value.
 **Personal org identified by a field, not by name.**
 `Organization.personalFor` points at the user. The alternative was an
 `isPersonal` flag or matching `name === 'Personal'`. A reference with a unique
-sparse index gives a one-lookup "find my Personal org" *and* makes the database
+partial index gives a one-lookup "find my Personal org" *and* makes the database
 refuse duplicates, which is what makes the migration safe to rerun.
 
 **Three roles, checked in two steps.**

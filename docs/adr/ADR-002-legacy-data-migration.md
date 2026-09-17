@@ -17,7 +17,7 @@ in the Render start command ahead of the server: `npm run migrate && npm start`.
 
 Idempotency is enforced by the database, not by promises in code:
 
-- `Organization.personalFor` carries a **unique sparse index**, so a second
+- `Organization.personalFor` carries a **unique partial index**, so a second
   Personal org for the same user is impossible even if the script crashes
   between creating the org and creating the membership.
 - `Membership` has a unique `(user, organization)` index.

@@ -7,7 +7,7 @@
  *
  * Idempotent by construction, not by convention:
  *  - users who already have any Membership are skipped
- *  - Organization.personalFor has a unique sparse index, so even a crash
+ *  - Organization.personalFor has a unique partial index, so even a crash
  *    between "create org" and "create membership" cannot produce a second
  *    Personal org on the next run; we catch the duplicate and reuse the org
  *  - jobs are matched with { organization: { $exists: false } }, so already

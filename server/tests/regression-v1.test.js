@@ -1,4 +1,4 @@
-import { request, app, registerUser, authed } from './helpers.js';
+import { request, registerUser, authed } from './helpers.js';
 
 /**
  * v1 behaviour that must survive v2 untouched. This is the brief's regression
@@ -19,7 +19,7 @@ describe('v1 regression', () => {
   it('register -> login round trip returns the same user', async () => {
     const { email, password, user } = await registerUser({ name: 'Round Trip' });
 
-    const res = await request(app).post('/api/v1/auth/login').send({ email, password });
+    const res = await request().post('/api/v1/auth/login').send({ email, password });
 
     expect(res.status).toBe(200);
     expect(res.body.user).toEqual(user);
@@ -131,11 +131,11 @@ describe('v1 regression', () => {
   it('missing token is 401 on every jobs route', async () => {
     const id = '507f1f77bcf86cd799439011';
     const results = await Promise.all([
-      request(app).get('/api/v1/jobs'),
-      request(app).post('/api/v1/jobs').send(jobBody()),
-      request(app).get(`/api/v1/jobs/${id}`),
-      request(app).patch(`/api/v1/jobs/${id}`).send({ status: 'declined' }),
-      request(app).delete(`/api/v1/jobs/${id}`),
+      request().get('/api/v1/jobs'),
+      request().post('/api/v1/jobs').send(jobBody()),
+      request().get(`/api/v1/jobs/${id}`),
+      request().patch(`/api/v1/jobs/${id}`).send({ status: 'declined' }),
+      request().delete(`/api/v1/jobs/${id}`),
     ]);
 
     expect(results.map((r) => r.status)).toEqual([401, 401, 401, 401, 401]);

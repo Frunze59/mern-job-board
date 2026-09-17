@@ -1,4 +1,4 @@
-import { request, app, registerUser } from './helpers.js';
+import { request, registerUser } from './helpers.js';
 
 /**
  * Proves the harness works: the real app, an in-memory database, a real JWT.
@@ -6,7 +6,7 @@ import { request, app, registerUser } from './helpers.js';
  */
 describe('test harness', () => {
   it('serves the health check', async () => {
-    const res = await request(app).get('/api/v1/health');
+    const res = await request().get('/api/v1/health');
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ status: 'ok' });
   });
@@ -18,7 +18,7 @@ describe('test harness', () => {
   });
 
   it('wipes data between tests', async () => {
-    const res = await request(app)
+    const res = await request()
       .post('/api/v1/auth/login')
       .send({ email: 'harness@example.com', password: 'secret123' });
     expect(res.status).toBe(401);
