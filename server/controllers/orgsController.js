@@ -13,7 +13,7 @@ import { BadRequestError, ForbiddenError } from '../errors/index.js';
  */
 
 /** Public shape of an organization for the caller who belongs to it. */
-const publicOrg = (org, role) => ({
+export const publicOrg = (org, role) => ({
   _id: org._id,
   name: org.name,
   slug: org.slug,

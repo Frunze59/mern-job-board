@@ -68,7 +68,9 @@ has been deleted, losing the id; the batched lookup keeps the id and only the
 name becomes `null`.
 
 **Invitation returns a URL; token stored hashed; existing users must sign in.**
-See ADR-003. Short version: a URL is what a human pastes; a hash means a leaked
+See ADR-003. Accepting writes the membership first and consumes the token
+second, so a crash between the two leaves the invitee a member with a link
+that still works, rather than a spent token and no membership. Short version: a URL is what a human pastes; a hash means a leaked
 database cannot mint memberships; refusing a password for an existing account
 avoids building a second login endpoint.
 
