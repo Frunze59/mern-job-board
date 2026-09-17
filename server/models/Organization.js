@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Membership from './Membership.js';
 
 export const PERSONAL_ORG_NAME = 'Personal';
 
@@ -134,6 +135,36 @@ OrganizationSchema.statics.findOrCreatePersonal = async function findOrCreatePer
     const org = await this.findOne({ personalFor: userId });
     return { org, created: false };
   }
+};
+
+/**
+ * Guarantee that a user has a Personal org AND an owner membership in it.
+ * Returns { org, orgCreated, membershipCreated }.
+ *
+ * Used by registration and by the 001-orgs migration. It also repairs a
+ * half-finished state: if a crash left the org without its membership, the
+ * next call adds the membership rather than creating a second org.
+ *
+ * $setOnInsert means an existing membership is never modified.
+ */
+OrganizationSchema.statics.ensurePersonalFor = async function ensurePersonalFor(userId) {
+  const { org, created: orgCreated } = await this.findOrCreatePersonal(userId);
+
+  let membershipCreated = false;
+  try {
+    const result = await Membership.updateOne(
+      { user: userId, organization: org._id },
+      { $setOnInsert: { role: 'owner' } },
+      { upsert: true }
+    );
+    membershipCreated = result.upsertedCount === 1;
+  } catch (error) {
+    // Two concurrent upserts can both miss and both insert; the unique index
+    // rejects the loser, which means the membership exists. That is success.
+    if (error?.code !== 11000) throw error;
+  }
+
+  return { org, orgCreated, membershipCreated };
 };
 
 export default mongoose.model('Organization', OrganizationSchema);

@@ -77,6 +77,15 @@ and doing it in the pipeline would need `$map` over a generated date range for
 no gain. A `{ organization, createdAt }` index on Job serves both the `$match`
 and the month range.
 
+**Registration undoes itself if the Personal org can't be created.**
+Registering is now two writes: the user, then the org and its owner
+membership. If the second fails, the handler deletes what it made and returns
+the error, so no account exists that can't reach any org. A transaction would
+do the same job, but needs a replica set, which the in-memory test database
+does not run by default. The org-and-membership step is one shared function,
+`Organization.ensurePersonalFor`, which the migration also uses. It is safe to
+call twice and repairs an org whose membership went missing.
+
 **Migration runs before the server starts, per user, idempotent by index.**
 See ADR-002. Short version: the deploy command becomes
 `npm run migrate && npm start`; a broken migration stops the deploy, which is

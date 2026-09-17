@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import User from '../models/User.js';
+import Organization from '../models/Organization.js';
+import Membership from '../models/Membership.js';
 import { BadRequestError, UnauthenticatedError } from '../errors/index.js';
 
 /**
@@ -7,6 +9,14 @@ import { BadRequestError, UnauthenticatedError } from '../errors/index.js';
  * though a freshly created document still holds it in memory.
  */
 const publicUser = (user) => ({ name: user.name, email: user.email });
+
+/** Compensating delete for a registration that failed half-way. */
+const removeUserAndPersonalOrg = async (userId) => {
+  const org = await Organization.findOne({ personalFor: userId });
+  await Membership.deleteMany({ user: userId });
+  if (org) await Organization.deleteOne({ _id: org._id });
+  await User.deleteOne({ _id: userId });
+};
 
 /**
  * POST /api/v1/auth/register
@@ -31,6 +41,18 @@ export const register = async (req, res) => {
 
   // The pre('save') hook hashes the password; never store req.body.password.
   const user = await User.create({ name, email, password });
+
+  // v2: every account starts with a Personal org it owns, so a solo user
+  // sees exactly what v1 showed them.
+  try {
+    await Organization.ensurePersonalFor(user._id);
+  } catch (error) {
+    // Undo the user rather than leave an account that cannot reach any org.
+    // Cleanup failures must not hide the original error.
+    await removeUserAndPersonalOrg(user._id).catch(() => {});
+    throw error;
+  }
+
   const token = user.createJWT();
 
   res.status(StatusCodes.CREATED).json({ user: publicUser(user), token });

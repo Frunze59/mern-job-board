@@ -54,7 +54,7 @@ smaller half of the grade.
 
 - [x] **19. Test harness** — `npm test` runs `tests/smoke.test.js` green (already does). Fill in `tests/regression-v1.test.js` so v1 behaviour is guarded before anything changes.
 - [x] **20. Models** — `Organization` (slug generation, `personalFor` unique partial index, `findOrCreatePersonal()`), `Membership` (unique user+org), `Invitation` (`issue()`, `hashToken()`, `findByToken()`, `isExpired()`, `isUsable()`). `Job.organization` added with the `{ organization, createdAt }` index; **not yet required** (see step 22). 32 tests in `tests/models.test.js`.
-- [ ] **21. Personal org on register** — `authController.register` creates the org + owner membership. Test in `organizations.test.js`.
+- [x] **21. Personal org on register** — `authController.register` calls `Organization.ensurePersonalFor` (shared with the migration) and deletes the user if that step fails. 12 tests in `organizations.test.js`.
 - [ ] **22. Org context** — make `Job.organization` required (deferred from step 20, because requiring it before `createJob` sets it breaks job creation). Implement `resolveOrg` and `requireRole`; wire `requireRole('owner','recruiter')` on job writes in `jobsRoutes.js`. Jobs controllers: filter by `req.org.orgId` instead of `createdBy`; set `organization` on create; add `createdByName` via populate. Retire `checkPermissions` for jobs. Tests in `roles.test.js`.
 
 ## Phase 5 — Features
