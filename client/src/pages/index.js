@@ -7,3 +7,6 @@ export { default as EditJob } from './EditJob.jsx';
 export { default as Profile } from './Profile.jsx';
 export { default as Error } from './Error.jsx';
 export { default as ProtectedRoute } from './ProtectedRoute.jsx';
+export { default as Team } from './Team.jsx';
+export { default as AcceptInvite } from './AcceptInvite.jsx';
+export { default as Stats } from './Stats.jsx';

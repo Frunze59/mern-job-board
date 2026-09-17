@@ -19,6 +19,9 @@ customFetch.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // TODO (v2): const orgId = localStorage.getItem(ACTIVE_ORG_KEY);
+  //            if (orgId) config.headers['X-Org-Id'] = orgId;
+  //            When absent the server falls back to the Personal org.
   return config;
 });
 
