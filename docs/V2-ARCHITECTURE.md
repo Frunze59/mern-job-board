@@ -52,15 +52,20 @@ partial index gives a one-lookup "find my Personal org" *and* makes the database
 refuse duplicates, which is what makes the migration safe to rerun.
 
 **Three roles, checked in two steps.**
-Scope first (is the record in my org: filter, 404 otherwise), role second (may
-I do this: 403 otherwise). See ADR-001 for why not two or four roles.
+Role first (may I do this: 403 otherwise), before any record is loaded, so a
+viewer's 403 says nothing about whether a job exists. Scope second (is the
+record in my org: every query filters by it, 404 otherwise). See ADR-001 for
+why not two or four roles.
 
 **`createdByName` looked up at read time, not copied onto the job.**
 The brief says "denormalize". Copying the name onto every job goes stale if a
 user renames themselves and would need its own migration for existing jobs.
-A `populate('createdBy', 'name')` on the list query is one extra indexed query
-per page and is always correct. The response still carries `createdByName`, so
-the client never does a follow-up fetch, which is the point of the requirement.
+Instead each response does one batched query for all the authors on the page
+and adds the name. That is always correct, and the client still never does a
+follow-up fetch, which is the point of the requirement. Mongoose `populate`
+was the obvious tool, but it replaces `createdBy` with `null` when the author
+has been deleted, losing the id; the batched lookup keeps the id and only the
+name becomes `null`.
 
 **Invitation returns a URL; token stored hashed; existing users must sign in.**
 See ADR-003. Short version: a URL is what a human pastes; a hash means a leaked

@@ -49,11 +49,10 @@ const JobSchema = new mongoose.Schema(
     },
     // v2: the source of truth for permissions. createdBy above stays as an
     // audit trail of who added the job.
-    // TODO (step 22): add `required: [true, 'Please provide an organization']`
-    // once createJob sets it. Requiring it before then breaks job creation.
     organization: {
       type: mongoose.Types.ObjectId,
       ref: 'Organization',
+      required: [true, 'Please provide an organization'],
     },
   },
   { timestamps: true }

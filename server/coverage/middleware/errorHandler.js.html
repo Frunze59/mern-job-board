@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">21.42% </span>
+                <span class="strong">78.57% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/14</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">8.33% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>1/12</span>
+                <span class='fraction'>11/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">50% </span>
-                <span class="quiet">Functions</span>
-                <span class='fraction'>1/2</span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>6/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">21.42% </span>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>2/2</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">78.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/14</span>
+                <span class='fraction'>11/14</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -124,23 +124,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -149,8 +149,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -158,8 +158,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -178,20 +178,20 @@
 const errorHandlerMiddleware = (err, req, res, next) =&gt; {
   // Errors we raised on purpose (BadRequestError, NotFoundError, ...) already
   // carry the right status and a message that is safe to show the client.
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (err.statusCode) {
+  if (err.statusCode) {
     return res.status(err.statusCode).json({ msg: err.message });
   }
 &nbsp;
   // Mongoose schema validation: report every failing field at once.
-<span class="cstat-no" title="statement not covered" >  if (err.name === 'ValidationError') {</span>
-    const msg = <span class="cstat-no" title="statement not covered" >Object.values(err.errors)</span>
-      .map(<span class="fstat-no" title="function not covered" >(i</span>tem) =&gt; <span class="cstat-no" title="statement not covered" >item.message)</span>
+  if (err.name === 'ValidationError') {
+    const msg = Object.values(err.errors)
+      .map((item) =&gt; item.message)
       .join(', ');
-<span class="cstat-no" title="statement not covered" >    return res.status(StatusCodes.BAD_REQUEST).json({ msg });</span>
+    return res.status(StatusCodes.BAD_REQUEST).json({ msg });
   }
 &nbsp;
   // Unique index violation, e.g. two users registering the same email at once.
-<span class="cstat-no" title="statement not covered" >  if (err.code === 11000) {</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (err.code === 11000) {
     const fields = <span class="cstat-no" title="statement not covered" >Object.keys(err.keyValue ?? {}).join(', ') || 'field';</span>
 <span class="cstat-no" title="statement not covered" >    return res</span>
       .status(StatusCodes.BAD_REQUEST)
@@ -200,7 +200,7 @@ const errorHandlerMiddleware = (err, req, res, next) =&gt; {
 &nbsp;
   // A malformed id in the URL, e.g. /api/v1/jobs/not-an-id. Treated as "no such
   // resource" rather than a server fault.
-<span class="cstat-no" title="statement not covered" >  if (err.name === 'CastError') {</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (err.name === 'CastError') {
 <span class="cstat-no" title="statement not covered" >    return res</span>
       .status(StatusCodes.NOT_FOUND)
       .json({ msg: `No item found with id ${err.value}` });
@@ -209,8 +209,8 @@ const errorHandlerMiddleware = (err, req, res, next) =&gt; {
   // Anything reaching this point is a bug or an outage. Log the detail for us,
   // and send the client a generic message so stack traces, driver internals and
   // connection strings are never exposed.
-<span class="cstat-no" title="statement not covered" >  console.error('Unhandled error:', err);</span>
-<span class="cstat-no" title="statement not covered" >  return res</span>
+  console.error('Unhandled error:', err);
+  return res
     .status(StatusCodes.INTERNAL_SERVER_ERROR)
     .json({ msg: 'Something went wrong, try again later' });
 };
@@ -223,7 +223,7 @@ export default errorHandlerMiddleware;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-09-17T07:35:55.501Z
+                at 2026-09-17T16:51:20.218Z
             </div>
         <script src="../prettify.js"></script>
         <script>

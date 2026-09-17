@@ -45,9 +45,8 @@ filter, paginate, edit and delete their own job applications.
 │   ├── models/           # User.js (hashing, JWT), Job.js
 │   ├── controllers/      # authController.js, jobsController.js
 │   ├── routes/           # authRoutes.js, jobsRoutes.js
-│   ├── middleware/       # auth.js (JWT), notFound.js, errorHandler.js
-│   ├── errors/           # CustomAPIError + BadRequest / Unauthenticated / Forbidden / NotFound
-│   └── utils/            # checkPermissions.js (owner-only guard)
+│   ├── middleware/       # auth.js (JWT), resolveOrg.js, requireRole.js, notFound.js, errorHandler.js
+│   └── errors/           # CustomAPIError + BadRequest / Unauthenticated / Forbidden / NotFound
 └── client/               # React app (Vite)
     ├── vite.config.js    # dev proxy for /api, target read from server/.env PORT
     └── src/
