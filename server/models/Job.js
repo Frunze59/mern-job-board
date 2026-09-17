@@ -47,12 +47,23 @@ const JobSchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Please provide a user'],
     },
+    // v2: the source of truth for permissions. createdBy above stays as an
+    // audit trail of who added the job.
+    // TODO (step 22): add `required: [true, 'Please provide an organization']`
+    // once createJob sets it. Requiring it before then breaks job creation.
+    organization: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Organization',
+    },
   },
   { timestamps: true }
 );
 
-// Every jobs query is scoped to the owner and sorted or filtered on top of
-// that, so index createdBy alongside createdAt to keep GET /jobs cheap.
+// v1 listing, and the migration's "jobs created by this user" lookup.
 JobSchema.index({ createdBy: 1, createdAt: -1 });
+
+// v2: every listing and the stats pipeline start with { organization }, and
+// the stats month branch range-scans createdAt within it.
+JobSchema.index({ organization: 1, createdAt: -1 });
 
 export default mongoose.model('Job', JobSchema);

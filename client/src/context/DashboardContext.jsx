@@ -20,6 +20,13 @@ const DashboardContext = createContext(null);
 
 /**
  * Shared dashboard state: the current user and an explicit logout.
+ *
+ * TODO (v2): also hold
+ *   orgs        from GET /orgs, loaded once after mount
+ *   activeOrg   { _id, name, role }, persisted to localStorage ACTIVE_ORG_KEY,
+ *               defaulting to the Personal org
+ *   setActiveOrg(id)   -> update state + storage; pages refetch on change
+ *   canWrite    = WRITE_ROLES.includes(activeOrg.role)   (hide buttons for viewers)
  */
 export const DashboardProvider = ({ children }) => {
   const [user, setUser] = useState(readStoredUser);

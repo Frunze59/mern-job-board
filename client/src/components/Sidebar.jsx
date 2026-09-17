@@ -4,6 +4,8 @@ import { Logo } from './index';
 const links = [
   { text: 'all jobs', path: 'all-jobs' },
   { text: 'add job', path: 'add-job' },
+  { text: 'stats', path: 'stats' },
+  { text: 'team', path: 'team' },
   { text: 'profile', path: 'profile' },
 ];
 

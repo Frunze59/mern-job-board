@@ -37,3 +37,10 @@ export const DEFAULT_JOB_FILTERS = {
   sort: JOB_SORT_BY.NEWEST_FIRST,
   page: 1,
 };
+
+/** Membership roles, mirrored from server/models/Membership.js */
+export const ROLES = ['owner', 'recruiter', 'viewer'];
+export const WRITE_ROLES = ['owner', 'recruiter'];
+
+/** localStorage key for the active organization id (sent as X-Org-Id). */
+export const ACTIVE_ORG_KEY = 'activeOrgId';

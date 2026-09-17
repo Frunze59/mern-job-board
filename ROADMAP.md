@@ -36,3 +36,46 @@ grep -rn "TODO" server client/src --include=*.js --include=*.jsx
 - [x] **16. README** — notes written, live URL added.
 - [x] **17. Deploy to Render** — build `npm run build`, start `npm start`, env vars, `NODE_ENV=production`.
 - [x] **18. Final check** — register → add job → filter/search/paginate → edit → delete → logout → 404 page.
+
+---
+
+# v2 — Team Job Board
+
+Branch: `feature/v2-team-job-board`, one PR to `main` at the end. Every file
+below already exists as a skeleton with TODO comments; `docs/V2-ARCHITECTURE.md`
+explains the design and `docs/adr/` the three decisions the brief asks about.
+
+Order is chosen to de-risk: the test harness first because coverage is graded
+and every later step should land with its tests; the migration early because it
+touches live data and gates the deploy; the client last because it is the
+smaller half of the grade.
+
+## Phase 4 — Foundations
+
+- [x] **19. Test harness** — `npm test` runs `tests/smoke.test.js` green (already does). Fill in `tests/regression-v1.test.js` so v1 behaviour is guarded before anything changes.
+- [x] **20. Models** — `Organization` (slug generation, `personalFor` unique partial index, `findOrCreatePersonal()`), `Membership` (unique user+org), `Invitation` (`issue()`, `hashToken()`, `findByToken()`, `isExpired()`, `isUsable()`). `Job.organization` added with the `{ organization, createdAt }` index; **not yet required** (see step 22). 32 tests in `tests/models.test.js`.
+- [x] **21. Personal org on register** — `authController.register` calls `Organization.ensurePersonalFor` (shared with the migration) and deletes the user if that step fails. 12 tests in `organizations.test.js`.
+- [ ] **22. Org context** — make `Job.organization` required (deferred from step 20, because requiring it before `createJob` sets it breaks job creation). Implement `resolveOrg` and `requireRole`; wire `requireRole('owner','recruiter')` on job writes in `jobsRoutes.js`. Jobs controllers: filter by `req.org.orgId` instead of `createdBy`; set `organization` on create; add `createdByName` via populate. Retire `checkPermissions` for jobs. Tests in `roles.test.js`.
+
+## Phase 5 — Features
+
+- [ ] **23. Migration** — `migrations/001-orgs.js` with `runMigration()` exported. `migration.test.js` runs it twice and asserts counts. Then set `startCommand: npm run migrate && npm start` in `render.yaml`.
+- [ ] **24. Orgs endpoints** — `GET /orgs`, `POST /orgs`, `GET /orgs/:orgId/members`, `POST /orgs/:orgId/invitations` (owner only, returns `inviteUrl`). Add `CLIENT_URL` to `.env.example`.
+- [ ] **25. Accept invitation** — `GET /invitations/:token`, `POST /invitations/:token/accept`, both branches, 404 / 410 / 403 paths. Tests in `invitations.test.js`.
+- [ ] **26. Stats** — `buildStatsPipeline(orgId, now)` + `getStats`. Deterministic fixture test with a fixed `now`. Confirm `explain()` shows the index.
+- [ ] **27. Seed + bench** — `scripts/seed-team.js` (refuse / `SEED_FORCE=1`), `scripts/bench-stats.js`. Run both against a dev database; save the p95 output for the PR.
+- [ ] **28. Coverage** — `npm test -- --coverage` ≥ 65% on controllers / models / migrations. Fill gaps before touching the client.
+
+## Phase 6 — Client
+
+- [ ] **29. Org plumbing** — `X-Org-Id` in `customFetch`, orgs + activeOrg + `canWrite` in `DashboardContext`, `OrgSwitcher` in the navbar, hide write buttons for viewers, show `createdByName` on cards.
+- [ ] **30. Team page** — members, invite form with copyable URL, create org.
+- [ ] **31. Accept-invite page** — both branches; optional RTL test.
+- [ ] **32. Stats page** — tiles, six CSS bars, top-companies table.
+
+## Phase 7 — Ship
+
+- [ ] **33. Docs** — finalise the three ADRs, README: new endpoints + shapes, "Running the seed and migration scripts", link to `docs/adr/`.
+- [ ] **34. Deploy** — push branch, open the PR, merge, confirm the Render log shows the migration summary, hit `/stats` on the live URL.
+- [ ] **35. Regression on live** — register → create job → filter → paginate → delete, plus one invite flow end-to-end.
+- [ ] **36. Submit** — Loom (invite flow, `/stats` response, one ADR decision), PR link, one-paragraph self-review.
