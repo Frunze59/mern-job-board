@@ -52,7 +52,7 @@ smaller half of the grade.
 
 ## Phase 4 — Foundations
 
-- [ ] **19. Test harness** — `npm test` runs `tests/smoke.test.js` green (already does). Fill in `tests/regression-v1.test.js` so v1 behaviour is guarded before anything changes.
+- [x] **19. Test harness** — `npm test` runs `tests/smoke.test.js` green (already does). Fill in `tests/regression-v1.test.js` so v1 behaviour is guarded before anything changes.
 - [ ] **20. Models** — `Organization` (slug generation, `personalFor` unique sparse), `Membership` (unique user+org), `Invitation` (`issue()`, `hashToken()`, `isExpired()`). Add `organization` (required, ref) to `Job` and the `{ organization, createdAt }` index. Unit-test slug uniqueness and the token hash.
 - [ ] **21. Personal org on register** — `authController.register` creates the org + owner membership. Test in `organizations.test.js`.
 - [ ] **22. Org context** — implement `resolveOrg` and `requireRole`; wire `requireRole('owner','recruiter')` on job writes in `jobsRoutes.js`. Jobs controllers: filter by `req.org.orgId` instead of `createdBy`; set `organization` on create; add `createdByName` via populate. Retire `checkPermissions` for jobs. Tests in `roles.test.js`.
