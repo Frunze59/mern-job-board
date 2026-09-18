@@ -11,29 +11,32 @@ work the same pool of jobs and a hiring manager to watch without touching.
 
 ## Decision
 
-Three roles per organization: `owner`, `recruiter`, `viewer`, stored on a
-`Membership` row linking a user to an org. Every org-scoped request answers
-two questions, in order:
+Three roles per organization, `owner`, `recruiter` and `viewer`, stored on a
+`Membership` row. Every org-scoped request answers two questions, in order:
 
-1. **Scope.** Is the record in my active organization? Controllers filter every
-   query by `req.org.orgId`, which `resolveOrg` derives from the `X-Org-Id`
-   header after confirming the caller holds a membership there. A job in
-   another org is a 404, not a 403: it does not exist from where you stand.
-2. **Role.** Does my role allow this action? `requireRole('owner','recruiter')`
-   gates job writes; `owner` alone gates inviting. `checkPermissions` from v1
-   is retired for jobs. `createdBy` stays as an audit trail only.
+1. **Role.** May my role in the active org do this? `requireRole` gates job
+   writes to owners and recruiters, and invitations to owners. It runs before
+   any record is loaded, so a viewer's 403 is identical whether or not the
+   job exists.
+2. **Scope.** Is the record in my active org? Every query filters by the org
+   that `resolveOrg` accepted from `X-Org-Id` after checking membership. A job
+   elsewhere is a 404: from where you stand, it does not exist.
 
-Why three and not two (member/viewer)? Somebody must be able to invite, and
-giving that to every recruiter lets anyone grow the org. Why not more (admin,
-billing)? No feature in scope needs them; a fourth role is a one-line enum
-change when one does.
+v1's `checkPermissions` is deleted rather than kept alongside. Any recruiter
+may edit any job in their org, so authorship grants nothing; `createdBy`
+remains as an audit trail. Roles are read on every request, not stored in
+the JWT, so a demotion takes effect immediately.
 
-**If an owner leaves** (endpoint not built, but the rule is): blocked while they
-are the last owner. Never auto-promote (silent privilege escalation), never
-auto-delete (data loss from a misclick).
+Why not two roles? Someone must be able to invite, and giving that to every
+recruiter lets anyone grow the org. Why not four? Nothing in scope needs an
+admin or billing role, and adding one is a one-line enum change.
+
+**If an owner leaves** (not built, but decided): blocked while they are the
+last owner. Auto-promoting grants power nobody asked for; auto-deleting
+destroys shared data from one click.
 
 ## Consequences
 
-Role checks are middleware, so controllers stay readable. The viewer UI hides
-write buttons, but the server is the real gate. Removing a member later must
-respect the last-owner rule.
+Controllers stay readable because role checks are middleware. The viewer UI
+hides write buttons, but the server is the real gate. A future
+remove-member endpoint must enforce the last-owner rule.

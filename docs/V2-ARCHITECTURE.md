@@ -52,18 +52,25 @@ partial index gives a one-lookup "find my Personal org" *and* makes the database
 refuse duplicates, which is what makes the migration safe to rerun.
 
 **Three roles, checked in two steps.**
-Scope first (is the record in my org: filter, 404 otherwise), role second (may
-I do this: 403 otherwise). See ADR-001 for why not two or four roles.
+Role first (may I do this: 403 otherwise), before any record is loaded, so a
+viewer's 403 says nothing about whether a job exists. Scope second (is the
+record in my org: every query filters by it, 404 otherwise). See ADR-001 for
+why not two or four roles.
 
 **`createdByName` looked up at read time, not copied onto the job.**
 The brief says "denormalize". Copying the name onto every job goes stale if a
 user renames themselves and would need its own migration for existing jobs.
-A `populate('createdBy', 'name')` on the list query is one extra indexed query
-per page and is always correct. The response still carries `createdByName`, so
-the client never does a follow-up fetch, which is the point of the requirement.
+Instead each response does one batched query for all the authors on the page
+and adds the name. That is always correct, and the client still never does a
+follow-up fetch, which is the point of the requirement. Mongoose `populate`
+was the obvious tool, but it replaces `createdBy` with `null` when the author
+has been deleted, losing the id; the batched lookup keeps the id and only the
+name becomes `null`.
 
 **Invitation returns a URL; token stored hashed; existing users must sign in.**
-See ADR-003. Short version: a URL is what a human pastes; a hash means a leaked
+See ADR-003. Accepting writes the membership first and consumes the token
+second, so a crash between the two leaves the invitee a member with a link
+that still works, rather than a spent token and no membership. Short version: a URL is what a human pastes; a hash means a leaked
 database cannot mint memberships; refusing a password for an existing account
 avoids building a second login endpoint.
 
@@ -75,7 +82,9 @@ turns the facet arrays into the object shape and merges the month counts onto
 a fixed six-month list so empty months read `0`. That is shaping, not counting,
 and doing it in the pipeline would need `$map` over a generated date range for
 no gain. A `{ organization, createdAt }` index on Job serves both the `$match`
-and the month range.
+and the month range, asserted with `explain()` rather than assumed.
+Months are bucketed in UTC, matching `$dateToString`, so the server's
+timezone cannot move a job between months.
 
 **Registration undoes itself if the Personal org can't be created.**
 Registering is now two writes: the user, then the org and its owner
@@ -87,12 +96,22 @@ does not run by default. The org-and-membership step is one shared function,
 call twice and repairs an org whose membership went missing.
 
 **Migration runs before the server starts, per user, idempotent by index.**
-See ADR-002. Short version: the deploy command becomes
-`npm run migrate && npm start`; a broken migration stops the deploy, which is
-the right failure. Lazy creation on first request was rejected because it
-hides a write in a read path and races.
+See ADR-002. The Render start command is `npm run migrate && npm start`, so a
+failed migration stops the deploy instead of starting a half-migrated app.
+Two things differ from the brief's wording, both found by rehearsing the
+upgrade on data written by the real v1 code:
 
-**Seed script refuses a non-empty database unless forced.**
+- A user with a membership is still processed if they have jobs left to move.
+  Otherwise a run that crashed between the two steps would strand those jobs.
+- The old version keeps serving while the new one migrates. A job it creates
+  in that window has no org until the next deploy's migration sweeps it up.
+
+`npm run migrate:dry-run` reports what would change without writing. The root
+script forwards arguments with a trailing `--`; without it npm swallowed
+`--dry-run` as its own flag and the "dry run" wrote to the database.
+`MIGRATE_DRY_RUN=1` works too, and cannot be swallowed.
+
+**Seed script refuses a non-empty database unless forced.** (Measured result: `docs/PERF-stats.md`.)
 This is the brief's second deliberate ambiguity. Wiping silently is how someone
 deletes production with a typo in `SEED_URL`. Appending makes the perf numbers
 meaningless because the dataset is no longer 500 jobs. So: refuse if any users

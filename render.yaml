@@ -10,13 +10,19 @@ services:
     # The client install passes --include=dev because vite is a devDependency
     # and NODE_ENV=production would otherwise skip it.
     buildCommand: npm run build
-    startCommand: npm start
+    # The migration runs first on every deploy. It exits 0 when there is
+    # nothing to do, and exits 1 if any user fails, which stops the server
+    # from starting on a half-migrated database. Render's separate
+    # pre-deploy command is not available on the free plan, hence the chain.
+    startCommand: npm run migrate && npm start
     healthCheckPath: /api/v1/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: JWT_LIFETIME
         value: 1d
+      # Invite links point at the service's own origin when this is unset,
+      # which is correct here because the API serves the client.
       - key: MONGO_URL
         sync: false
       - key: JWT_SECRET

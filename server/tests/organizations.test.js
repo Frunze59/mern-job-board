@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { vi } from 'vitest';
-import { request, registerUser } from './helpers.js';
+import { request, registerUser, authed } from './helpers.js';
 import User from '../models/User.js';
 import Organization, { PERSONAL_ORG_NAME } from '../models/Organization.js';
 import Membership from '../models/Membership.js';
@@ -167,11 +167,182 @@ describe('organizations & memberships', () => {
     });
   });
 
-  // Step 24
-  it.todo('POST /orgs creates an org and makes the caller its owner');
-  it.todo('slugs are unique: two orgs named "Acme" get acme and acme-2');
-  it.todo('GET /orgs lists every org the user belongs to, with role');
-  // Step 22
-  it.todo('X-Org-Id for an org the user is not in -> 403');
-  it.todo('missing X-Org-Id falls back to the Personal org');
+  describe('POST /orgs', () => {
+    it('creates an org and makes the caller its owner', async () => {
+      const { token, email } = await registerUser();
+
+      const res = await authed(token)('post', '/api/v1/orgs').send({ name: 'Acme Recruiting' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.org).toMatchObject({
+        name: 'Acme Recruiting',
+        slug: 'acme-recruiting',
+        role: 'owner',
+        isPersonal: false,
+      });
+
+      const userId = (await User.findOne({ email }))._id;
+      const membership = await Membership.findOne({
+        user: userId,
+        organization: res.body.org._id,
+      });
+      expect(membership.role).toBe('owner');
+    });
+
+    it('lets the creator use the new org immediately', async () => {
+      const { token } = await registerUser();
+      const { body } = await authed(token)('post', '/api/v1/orgs').send({ name: 'Acme' });
+
+      const created = await authed(token, body.org._id)('post', '/api/v1/jobs').send({
+        company: 'Acme',
+        position: 'Dev',
+        jobLocation: 'Riga',
+      });
+
+      expect(created.status).toBe(201);
+      expect(created.body.job.organization).toBe(body.org._id);
+    });
+
+    it('slugs are unique: two orgs named "Acme" get acme and acme-2', async () => {
+      const a = await registerUser();
+      const b = await registerUser();
+      const first = await authed(a.token)('post', '/api/v1/orgs').send({ name: 'Acme' });
+      const second = await authed(b.token)('post', '/api/v1/orgs').send({ name: 'Acme' });
+
+      expect(first.body.org.slug).toBe('acme');
+      expect(second.body.org.slug).toBe('acme-2');
+    });
+
+    it('trims the name and rejects a blank or invalid one', async () => {
+      const { token } = await registerUser();
+      const as = authed(token);
+
+      const trimmed = await as('post', '/api/v1/orgs').send({ name: '  Spaced Out  ' });
+      expect(trimmed.body.org.name).toBe('Spaced Out');
+
+      for (const name of [undefined, '', '   ']) {
+        const res = await as('post', '/api/v1/orgs').send({ name });
+        expect(res.status).toBe(400);
+        expect(res.body.msg).toMatch(/organization name/i);
+      }
+      const tooShort = await as('post', '/api/v1/orgs').send({ name: 'ab' });
+      expect(tooShort.status).toBe(400);
+    });
+
+    it('leaves no org behind if the membership cannot be created', async () => {
+      const { token } = await registerUser();
+      vi.spyOn(Membership, 'create').mockRejectedValueOnce(new Error('write lost'));
+      const before = await Organization.countDocuments();
+
+      const res = await authed(token)('post', '/api/v1/orgs').send({ name: 'Doomed Agency' });
+
+      expect(res.status).toBe(500);
+      expect(await Organization.countDocuments()).toBe(before);
+    });
+
+    it('requires a token', async () => {
+      const res = await request().post('/api/v1/orgs').send({ name: 'Acme' });
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe('GET /orgs', () => {
+    it('lists every org the user belongs to, with role', async () => {
+      const { token } = await registerUser();
+      const as = authed(token);
+      await as('post', '/api/v1/orgs').send({ name: 'Zebra Agency' });
+      await as('post', '/api/v1/orgs').send({ name: 'Acme Recruiting' });
+
+      const res = await as('get', '/api/v1/orgs');
+
+      expect(res.status).toBe(200);
+      // Personal first, then the rest alphabetically.
+      expect(res.body.orgs.map((o) => [o.name, o.role, o.isPersonal])).toEqual([
+        ['Personal', 'owner', true],
+        ['Acme Recruiting', 'owner', false],
+        ['Zebra Agency', 'owner', false],
+      ]);
+    });
+
+    it('shows the role the user actually holds, not always owner', async () => {
+      const owner = await registerUser();
+      const guest = await registerUser();
+      const { body } = await authed(owner.token)('post', '/api/v1/orgs').send({ name: 'Acme' });
+      await Membership.create({
+        user: (await User.findOne({ email: guest.email }))._id,
+        organization: body.org._id,
+        role: 'viewer',
+      });
+
+      const res = await authed(guest.token)('get', '/api/v1/orgs');
+      const acme = res.body.orgs.find((o) => o.name === 'Acme');
+      expect(acme.role).toBe('viewer');
+    });
+
+    it("never lists an org the user does not belong to", async () => {
+      const owner = await registerUser();
+      await authed(owner.token)('post', '/api/v1/orgs').send({ name: 'Secret Agency' });
+      const outsider = await registerUser();
+
+      const res = await authed(outsider.token)('get', '/api/v1/orgs');
+      expect(res.body.orgs.map((o) => o.name)).toEqual(['Personal']);
+    });
+  });
+
+  describe('GET /orgs/:orgId/members', () => {
+    it('lists every member with name, email and role', async () => {
+      const owner = await registerUser({ name: 'Owner Person' });
+      const viewer = await registerUser({ name: 'Viewer Person' });
+      const { body } = await authed(owner.token)('post', '/api/v1/orgs').send({ name: 'Acme' });
+      await Membership.create({
+        user: (await User.findOne({ email: viewer.email }))._id,
+        organization: body.org._id,
+        role: 'viewer',
+      });
+
+      const res = await authed(owner.token)('get', `/api/v1/orgs/${body.org._id}/members`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.members.map((m) => [m.name, m.email, m.role])).toEqual([
+        ['Owner Person', owner.email, 'owner'],
+        ['Viewer Person', viewer.email, 'viewer'],
+      ]);
+      expect(res.body.members[0].joinedAt).toBeTruthy();
+    });
+
+    it('is open to every role, not just the owner', async () => {
+      const owner = await registerUser();
+      const viewer = await registerUser();
+      const { body } = await authed(owner.token)('post', '/api/v1/orgs').send({ name: 'Acme' });
+      await Membership.create({
+        user: (await User.findOne({ email: viewer.email }))._id,
+        organization: body.org._id,
+        role: 'viewer',
+      });
+
+      const res = await authed(viewer.token)('get', `/api/v1/orgs/${body.org._id}/members`);
+      expect(res.status).toBe(200);
+      expect(res.body.members).toHaveLength(2);
+    });
+
+    it('refuses a non-member, and an unknown org the same way', async () => {
+      const owner = await registerUser();
+      const outsider = await registerUser();
+      const { body } = await authed(owner.token)('post', '/api/v1/orgs').send({ name: 'Acme' });
+
+      const foreign = await authed(outsider.token)('get', `/api/v1/orgs/${body.org._id}/members`);
+      const unknown = await authed(outsider.token)('get', `/api/v1/orgs/${id()}/members`);
+
+      expect(foreign.status).toBe(403);
+      expect(unknown.status).toBe(403);
+      expect(foreign.body).toEqual(unknown.body);
+    });
+
+    it('rejects a malformed org id with 400', async () => {
+      const { token } = await registerUser();
+      const res = await authed(token)('get', '/api/v1/orgs/not-an-id/members');
+      expect(res.status).toBe(400);
+      expect(res.body.msg).toMatch(/Invalid organization id/);
+    });
+  });
 });

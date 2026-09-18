@@ -5,36 +5,40 @@
 ## Context
 
 One accept endpoint must serve an invitee who already has an account and one
-who does not, and the invitee may or may not be signed in when they click.
-Sending email is out of scope.
+who does not, and either may or may not be signed in when they click. Sending
+email is out of scope.
 
 ## Decision
 
 `POST /orgs/:orgId/invitations` returns a **full invite URL**, not a bare
-token. A URL is what the owner actually pastes into Slack or an email; a token
-would make every client rebuild the same string. The token is 32 random bytes
-and only its SHA-256 hash is stored, so a database leak cannot be turned into
-memberships. It expires in 7 days and is single-use.
+token: a URL is what the owner pastes into Slack, whereas a token makes every
+client rebuild the same string. `CLIENT_URL` sets its base, defaulting to the
+request's own origin, which is right in production because the API serves the
+client.
 
-`POST /invitations/:token/accept` branches on the request, not on the user:
+Only the token's SHA-256 hash is stored, so a leaked database cannot be turned
+into memberships. Tokens expire in 7 days and are single-use, and re-inviting
+an address supersedes any pending invitation, so a lost link can be reissued
+and only the newest one works.
 
-- **Authorization header present:** the signed-in user's email must equal the
-  invitation's, else 403. Membership is created and the token consumed.
-- **No header, email not registered:** body `{ password, name? }` creates the
-  account, the membership, and returns a JWT. Name defaults to the part of the
-  email before `@`.
-- **No header, email already registered:** 403 with "sign in first". We do
-  **not** accept a password here.
+`POST /invitations/:token/accept` branches on the request, not the user:
 
-That last rule is the deliberate choice. Accepting a password for an existing
-account would turn the accept endpoint into a second login, with its own
-brute-force surface and error messages, for a case the sign-in page already
-handles. The alternative of forcing everyone to register before accepting
-would break the requirement to invite people who have no account yet.
+- **Signed in:** their email must match the invitation, else 403. Membership
+  created, token consumed.
+- **Not signed in, email unknown:** `{ password, name? }` creates the account
+  and membership and returns a JWT. Name defaults to the part before `@`.
+- **Not signed in, email already registered:** 403, "sign in first". No
+  password is accepted here.
+
+That last rule is the deliberate one. Taking a password for an existing
+account would make this a second login endpoint, with its own brute-force
+surface, for a case the sign-in page already handles. The alternative,
+forcing everyone to register first, would break the requirement to invite
+people who have no account.
 
 ## Consequences
 
-The accept page has two visual branches, driven by whether a token is in
-storage. Existing users who are signed out get one extra step. Because the
-token travels in a URL it will sit in browser history and logs; expiry,
-single use and hashed storage limit the damage if one leaks.
+The accept page has two branches, chosen by whether a token is in storage.
+Signed-out existing users get one extra step. The token rides in a URL, so it
+lands in history and logs; expiry, single use and hashed storage limit what a
+leak is worth.

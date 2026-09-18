@@ -1,11 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
 import Job from '../models/Job.js';
+import User from '../models/User.js';
 import { BadRequestError, NotFoundError } from '../errors/index.js';
-import checkPermissions from '../utils/checkPermissions.js';
 
 /**
- * Fields a client is allowed to set. createdBy is deliberately absent: it is
- * always taken from the verified JWT, never from the request body.
+ * Fields a client is allowed to set. createdBy and organization are
+ * deliberately absent: createdBy comes from the verified JWT and organization
+ * from the active org, never from the request body. That also means a PATCH
+ * cannot move a job into another organization.
  */
 const EDITABLE_FIELDS = ['company', 'position', 'jobLocation', 'status', 'jobType'];
 
@@ -21,17 +23,35 @@ const pickEditableFields = (body) =>
   );
 
 /**
- * Load a job by id and confirm the current user owns it.
- * 404 if it does not exist, 403 if it belongs to someone else.
+ * Every lookup below is scoped to the active org. A job in any other org is
+ * simply not found (404): from where the caller stands it does not exist.
+ * v1's createdBy ownership check is gone; the role check happens in
+ * requireRole before these handlers run.
  */
-const findOwnedJob = async (jobId, requestUser) => {
-  const job = await Job.findById(jobId);
-  if (!job) {
-    throw new NotFoundError(`No job with id ${jobId}`);
-  }
-  checkPermissions(requestUser, job.createdBy);
-  return job;
+const orgJobFilter = (req, jobId) => ({ _id: jobId, organization: req.org.orgId });
+
+const notFound = (jobId) => new NotFoundError(`No job with id ${jobId}`);
+
+/**
+ * Add `createdByName` to each job with ONE extra query for all authors.
+ *
+ * Chosen over Mongoose populate: populate replaces createdBy with null when
+ * the author no longer exists, which loses the id. Here the id always stays
+ * and only the name can be null.
+ */
+const withCreatedByName = async (jobs) => {
+  const plain = jobs.map((job) => (typeof job.toObject === 'function' ? job.toObject() : job));
+  const authorIds = [...new Set(plain.map((job) => String(job.createdBy)))];
+  const authors = await User.find({ _id: { $in: authorIds } }, { name: 1 }).lean();
+  const nameById = new Map(authors.map((user) => [String(user._id), user.name]));
+
+  return plain.map((job) => ({
+    ...job,
+    createdByName: nameById.get(String(job.createdBy)) ?? null,
+  }));
 };
+
+const withCreatedByNameOne = async (job) => (await withCreatedByName([job]))[0];
 
 /**
  * Sort options accepted by GET /jobs, mapped to mongoose sort strings.
@@ -70,13 +90,13 @@ const toPositiveInt = (value, fallback, max = Infinity) => {
  * query: status, jobType, sort, search, page, limit
  * 200 -> { jobs, totalJobs, numOfPages }
  *
- * Always scoped to the authenticated user, so one user can never read another
- * user's jobs regardless of the filters supplied.
+ * Always scoped to the active organization, so no filter can widen the result
+ * to another org's jobs. Each job carries createdByName.
  */
 export const getAllJobs = async (req, res) => {
   const { status, jobType, sort, search } = req.query;
 
-  const queryObject = { createdBy: req.user.userId };
+  const queryObject = { organization: req.org.orgId };
 
   // 'all' (and a missing param) means no filtering on that field.
   if (status && status !== 'all') queryObject.status = status;
@@ -91,31 +111,32 @@ export const getAllJobs = async (req, res) => {
   const limit = toPositiveInt(req.query.limit, DEFAULT_LIMIT, MAX_LIMIT);
   const skip = (page - 1) * limit;
 
-  const [jobs, totalJobs] = await Promise.all([
-    Job.find(queryObject).sort(sortKey).skip(skip).limit(limit),
+  const [pageOfJobs, totalJobs] = await Promise.all([
+    Job.find(queryObject).sort(sortKey).skip(skip).limit(limit).lean(),
     Job.countDocuments(queryObject),
   ]);
 
+  const jobs = await withCreatedByName(pageOfJobs);
   const numOfPages = Math.ceil(totalJobs / limit);
 
   res.status(StatusCodes.OK).json({ jobs, totalJobs, numOfPages });
 };
 
 /**
- * GET /api/v1/jobs/:id
- * 200 -> { job } | 403 not owner | 404 not found
+ * GET /api/v1/jobs/:id   (any role)
+ * 200 -> { job } | 404 not in the active org
  * Used by the Edit Job page to prefill its form on a fresh page load.
  */
 export const getJob = async (req, res) => {
-  const job = await findOwnedJob(req.params.id, req.user);
-  res.status(StatusCodes.OK).json({ job });
+  const job = await Job.findOne(orgJobFilter(req, req.params.id)).lean();
+  if (!job) throw notFound(req.params.id);
+  res.status(StatusCodes.OK).json({ job: await withCreatedByNameOne(job) });
 };
 
 /**
- * POST /api/v1/jobs
+ * POST /api/v1/jobs   (owner, recruiter)
  * body: { company, position, jobLocation, status?, jobType? }
- * 201 -> { job }
- * 400 -> missing required fields
+ * 201 -> { job } | 400 missing required fields | 403 viewer
  */
 export const createJob = async (req, res) => {
   const { company, position, jobLocation } = req.body;
@@ -127,15 +148,17 @@ export const createJob = async (req, res) => {
   const job = await Job.create({
     ...pickEditableFields(req.body),
     createdBy: req.user.userId,
+    organization: req.org.orgId,
   });
 
-  res.status(StatusCodes.CREATED).json({ job });
+  res.status(StatusCodes.CREATED).json({ job: await withCreatedByNameOne(job) });
 };
 
 /**
- * PATCH /api/v1/jobs/:id
+ * PATCH /api/v1/jobs/:id   (owner, recruiter)
  * Partial update: only the fields present in the body are changed.
- * 200 -> { job } | 400 empty body | 403 not owner | 404 not found
+ * Any writer in the org may edit any job in it, not just their own.
+ * 200 -> { job } | 400 empty body | 403 viewer | 404 not in the active org
  */
 export const updateJob = async (req, res) => {
   const { id: jobId } = req.params;
@@ -145,25 +168,26 @@ export const updateJob = async (req, res) => {
     throw new BadRequestError('Please provide at least one field to update');
   }
 
-  await findOwnedJob(jobId, req.user);
-
-  const job = await Job.findByIdAndUpdate(jobId, updates, {
-    new: true,
+  // Scope and update in one query, so the job cannot change org between a
+  // separate "check" and "write".
+  const job = await Job.findOneAndUpdate(orgJobFilter(req, jobId), updates, {
+    returnDocument: 'after',
     runValidators: true,
-  });
+  }).lean();
+  if (!job) throw notFound(jobId);
 
-  res.status(StatusCodes.OK).json({ job });
+  res.status(StatusCodes.OK).json({ job: await withCreatedByNameOne(job) });
 };
 
 /**
- * DELETE /api/v1/jobs/:id
- * 200 -> { msg } | 403 not owner | 404 not found
+ * DELETE /api/v1/jobs/:id   (owner, recruiter)
+ * 200 -> { msg } | 403 viewer | 404 not in the active org
  */
 export const deleteJob = async (req, res) => {
   const { id: jobId } = req.params;
 
-  const job = await findOwnedJob(jobId, req.user);
-  await job.deleteOne();
+  const { deletedCount } = await Job.deleteOne(orgJobFilter(req, jobId));
+  if (deletedCount === 0) throw notFound(jobId);
 
   res.status(StatusCodes.OK).json({ msg: 'Job removed' });
 };
