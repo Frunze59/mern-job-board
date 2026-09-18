@@ -650,6 +650,104 @@ a:hover {
 }
 
 /* ==========================================================================
+   Stats page
+   ========================================================================== */
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Each tile borders in its status colour, so the tiles and the status pills
+   on the job cards say the same thing the same way. */
+.stat-tile {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  border-bottom: 4px solid var(--grey-300);
+}
+.stat-number {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.stat-label {
+  margin: 0.5rem 0 0;
+  color: var(--grey-500);
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+.stat-tile-pending {
+  border-bottom-color: var(--yellow-dark);
+}
+.stat-tile-pending .stat-number {
+  color: var(--yellow-dark);
+}
+.stat-tile-interview {
+  border-bottom-color: var(--green-dark);
+}
+.stat-tile-interview .stat-number {
+  color: var(--green-dark);
+}
+.stat-tile-declined {
+  border-bottom-color: var(--red-dark);
+}
+.stat-tile-declined .stat-number {
+  color: var(--red-dark);
+}
+
+.stats-heading {
+  margin: 0 0 1rem;
+}
+
+/* Six horizontal bars. A chart library would be a large dependency for this,
+   and horizontal rows leave room for a readable label and the raw number. */
+.bar-list {
+  list-style: none;
+  margin: 0 0 2.5rem;
+  padding: 1.5rem;
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 2.5rem;
+  align-items: center;
+  gap: 1rem;
+}
+.bar-row + .bar-row {
+  margin-top: 0.75rem;
+}
+.bar-label {
+  color: var(--grey-500);
+  font-size: 0.85rem;
+}
+.bar-track {
+  display: block;
+  height: 1.5rem;
+  background: var(--grey-100);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: var(--primary-500);
+  border-radius: var(--border-radius);
+  transition: width var(--transition);
+}
+.bar-value {
+  text-align: right;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 @media (max-width: 900px) {
@@ -699,6 +797,13 @@ a:hover {
   }
   .invite-link-row {
     flex-direction: column;
+  }
+  .bar-row {
+    grid-template-columns: 4.5rem 1fr 2rem;
+    gap: 0.6rem;
+  }
+  .bar-list {
+    padding: 1.25rem;
   }
   .page-status {
     margin-left: 0;
