@@ -9,6 +9,8 @@
  *
  * Exits 1 if p95 misses the target, so it can gate a deploy or CI.
  */
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { SEED_PASSWORD, TEAM } from './seed-team.js';
 
 const TARGET_P95_MS = 200;
@@ -82,9 +84,14 @@ export const main = async ({ log = console.log } = {}) => {
   return { p95, passed, runs, totalJobs };
 };
 
-main()
-  .then(({ passed }) => process.exit(passed ? 0 : 1))
-  .catch((error) => {
-    console.error(`[bench] ${error.message}`);
-    process.exit(1);
-  });
+const isDirectRun =
+  process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+
+if (isDirectRun) {
+  main()
+    .then(({ passed }) => process.exit(passed ? 0 : 1))
+    .catch((error) => {
+      console.error(`[bench] ${error.message}`);
+      process.exit(1);
+    });
+}

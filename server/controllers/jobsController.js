@@ -171,7 +171,7 @@ export const updateJob = async (req, res) => {
   // Scope and update in one query, so the job cannot change org between a
   // separate "check" and "write".
   const job = await Job.findOneAndUpdate(orgJobFilter(req, jobId), updates, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   }).lean();
   if (!job) throw notFound(jobId);

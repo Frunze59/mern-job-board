@@ -64,7 +64,7 @@ smaller half of the grade.
 - [x] **25. Accept invitation** — `GET /invitations/:token` (renders the accept page), `POST /invitations/:token/accept` for both branches. Membership is written before the token is consumed, so a crash between the two never locks the invitee out. Invited new users get a Personal org too. 404 / 410 / 403 / 401 all covered; 33 tests in `invitations.test.js`.
 - [x] **26. Stats** — one `$match` -> `$facet` -> `$project` pipeline; all counting in the database, JS only reshapes and zero-fills the six-month window. Months bucketed in UTC. `explain()` asserted to use `organization_1_createdAt_-1` with no COLLSCAN. 19 tests against a pinned clock.
 - [x] **27. Seed + bench** — `seed-team.js` (1 org, 3 members, 500 jobs, deterministic; refuses a non-empty database or a SEED_URL matching MONGO_URL; `SEED_FORCE=1` wipes). `bench-stats.js` exits non-zero if p95 misses 200ms. Measured **p95 6.6ms**; evidence in `docs/PERF-stats.md`. 9 tests.
-- [ ] **28. Coverage** — `npm test -- --coverage` ≥ 65% on controllers / models / migrations. Fill gaps before touching the client.
+- [x] **28. Coverage** — `npm test -- --coverage` now works from the root (npm was eating the flag). **97.7% statements / 98% lines** on controllers, models, migrations and middleware, against the brief's 65% bar. Thresholds raised to just under the current figures so a regression fails the run. 190 tests.
 
 ## Phase 6 — Client
 
