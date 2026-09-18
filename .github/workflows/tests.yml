@@ -1,0 +1,60 @@
+name: Tests
+
+# Runs on every pull request, and on pushes to main so the branch itself is
+# always known-good. Enable "Require status checks" on main once this has run
+# at least once and GitHub knows the check exists.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  server:
+    name: Server tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      # The suite runs against mongodb-memory-server, which downloads a real
+      # mongod on first use. Caching it keeps later runs from re-downloading
+      # ~100 MB every time.
+      - name: Cache the MongoDB binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}
+
+      - name: Install server dependencies
+        run: npm ci --prefix server
+
+      # Fails the run if coverage drops below the thresholds in
+      # server/vitest.config.js, not only if a test fails.
+      - name: Run tests with coverage
+        run: npm test -- --coverage
+
+  client:
+    name: Client lint and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies
+        run: npm ci --prefix client
+
+      - run: npm run lint --prefix client
+
+      - run: npm run build --prefix client
