@@ -6,6 +6,37 @@ export const TOKEN_KEY = 'token';
 export const USER_KEY = 'user';
 
 /**
+ * Read the signed-in user saved at login. A malformed entry (hand-edited or
+ * left over from an older version) must not crash a page, so treat it as
+ * "no user" instead of letting JSON.parse throw during render.
+ */
+export const readStoredUser = () => {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Forget the signed-in session. Used by logout and by a rejected token. */
+export const clearSession = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(ACTIVE_ORG_KEY);
+};
+
+/**
+ * Paths whose 401 means something other than "your session expired", so the
+ * page is left to explain it instead of being redirected out from under.
+ *
+ *   /auth         wrong credentials typed into the login form
+ *   /invitations  a stale token on a public page whose URL must not be lost;
+ *                 the accept page signs the user out and carries on in place
+ */
+const SELF_HANDLED_401 = ['/auth', '/invitations'];
+
+/**
  * Single axios instance for the whole app.
  *  - baseURL '/api/v1' (the Vite proxy forwards this to the Express server in dev)
  *  - request interceptor: attach `Authorization: Bearer <token>` from localStorage
@@ -37,19 +68,14 @@ customFetch.interceptors.request.use((config) => {
 customFetch.interceptors.response.use(
   (response) => response,
   (error) => {
-    // A 401 from /auth/login or /auth/register means "those credentials are
-    // wrong", not "your session expired". Redirecting there would reload the
-    // page and wipe the inline error the form is about to show, so let the
-    // calling page handle it.
-    const isAuthRequest = error.config?.url?.startsWith('/auth');
+    const url = error.config?.url ?? '';
+    const selfHandled = SELF_HANDLED_401.some((prefix) => url.startsWith(prefix));
 
-    if (error.response?.status === 401 && !isAuthRequest) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+    if (error.response?.status === 401 && !selfHandled) {
       // The org id belongs to the session that just ended. Leaving it behind
       // would send the next account's first requests at an org it may well
       // not belong to.
-      localStorage.removeItem(ACTIVE_ORG_KEY);
+      clearSession();
       // Full reload rather than a router navigate: this file is outside the
       // router, and a reload guarantees no stale authenticated state survives.
       window.location.assign('/register');

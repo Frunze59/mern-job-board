@@ -7,22 +7,12 @@ import {
   useState,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import customFetch, { getErrorMessage, TOKEN_KEY, USER_KEY } from '../utils/customFetch';
+import customFetch, {
+  clearSession,
+  getErrorMessage,
+  readStoredUser,
+} from '../utils/customFetch';
 import { ACTIVE_ORG_KEY, WRITE_ROLES } from '../utils/constants';
-
-/**
- * Read the signed-in user saved at login. A malformed entry (hand-edited or
- * left over from an older version) must not crash the dashboard, so treat it
- * as "no user" instead of letting JSON.parse throw during render.
- */
-const readStoredUser = () => {
-  try {
-    const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
 
 /**
  * Decide which org to start in.
@@ -113,9 +103,7 @@ export const DashboardProvider = ({ children }) => {
   );
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(ACTIVE_ORG_KEY);
+    clearSession();
     setUser(null);
     // replace so the back button cannot return to a dashboard page that would
     // immediately bounce to /register anyway.

@@ -70,7 +70,7 @@ smaller half of the grade.
 
 - [x] **29. Org plumbing** — `X-Org-Id` in `customFetch`, orgs + activeOrg + `canWrite` in `DashboardContext`, `OrgSwitcher` in the navbar, hide write buttons for viewers, show `createdByName` on cards.
 - [x] **30. Team page** — members, invite form with copyable URL, create org.
-- [ ] **31. Accept-invite page** — both branches; optional RTL test.
+- [x] **31. Accept-invite page** — both branches; optional RTL test.
 - [ ] **32. Stats page** — tiles, six CSS bars, top-companies table.
 
 ## Phase 7 — Ship
