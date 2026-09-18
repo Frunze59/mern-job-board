@@ -111,7 +111,7 @@ script forwards arguments with a trailing `--`; without it npm swallowed
 `--dry-run` as its own flag and the "dry run" wrote to the database.
 `MIGRATE_DRY_RUN=1` works too, and cannot be swallowed.
 
-**Seed script refuses a non-empty database unless forced.**
+**Seed script refuses a non-empty database unless forced.** (Measured result: `docs/PERF-stats.md`.)
 This is the brief's second deliberate ambiguity. Wiping silently is how someone
 deletes production with a typo in `SEED_URL`. Appending makes the perf numbers
 meaningless because the dataset is no longer 500 jobs. So: refuse if any users
