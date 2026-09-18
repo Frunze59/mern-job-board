@@ -82,7 +82,9 @@ turns the facet arrays into the object shape and merges the month counts onto
 a fixed six-month list so empty months read `0`. That is shaping, not counting,
 and doing it in the pipeline would need `$map` over a generated date range for
 no gain. A `{ organization, createdAt }` index on Job serves both the `$match`
-and the month range.
+and the month range, asserted with `explain()` rather than assumed.
+Months are bucketed in UTC, matching `$dateToString`, so the server's
+timezone cannot move a job between months.
 
 **Registration undoes itself if the Personal org can't be created.**
 Registering is now two writes: the user, then the org and its owner
