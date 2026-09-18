@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ACTIVE_ORG_KEY } from './constants';
 
 /** localStorage keys, shared so pages and interceptors cannot drift apart. */
 export const TOKEN_KEY = 'token';
@@ -19,9 +20,17 @@ customFetch.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  // TODO (v2): const orgId = localStorage.getItem(ACTIVE_ORG_KEY);
-  //            if (orgId) config.headers['X-Org-Id'] = orgId;
-  //            When absent the server falls back to the Personal org.
+  // The active org is read from storage rather than from React state because
+  // this file lives outside the component tree. DashboardContext writes the
+  // key before it sets its own state, so the two can never disagree on the
+  // org a request belongs to.
+  //
+  // When the header is absent the server falls back to the Personal org, which
+  // is what keeps the pre-v2 client working against the v2 API.
+  const orgId = localStorage.getItem(ACTIVE_ORG_KEY);
+  if (orgId) {
+    config.headers['X-Org-Id'] = orgId;
+  }
   return config;
 });
 
@@ -37,6 +46,10 @@ customFetch.interceptors.response.use(
     if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
+      // The org id belongs to the session that just ended. Leaving it behind
+      // would send the next account's first requests at an org it may well
+      // not belong to.
+      localStorage.removeItem(ACTIVE_ORG_KEY);
       // Full reload rather than a router navigate: this file is outside the
       // router, and a reload guarantees no stale authenticated state survives.
       window.location.assign('/register');

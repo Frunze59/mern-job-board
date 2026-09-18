@@ -356,10 +356,33 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 1rem;
+  /* A flex item will not shrink below its content width unless told to. Without
+     this the org name pushes the logout button off a narrow screen. */
+  min-width: 0;
 }
 .navbar-name {
   color: var(--grey-500);
   font-size: 0.9rem;
+}
+
+/* The org switcher sits in the navbar, so it uses the form-select look at a
+   smaller size rather than a style of its own. */
+.org-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.org-switcher-label {
+  color: var(--grey-500);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.org-switcher-select {
+  width: auto;
+  max-width: 16rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.875rem;
 }
 
 .dashboard-page {
@@ -417,7 +440,7 @@ a:hover {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.6rem 1rem;
-  margin: 1.25rem 0;
+  margin: 1.25rem 0 0.75rem;
   align-items: center;
   font-size: 0.875rem;
   color: var(--grey-500);
@@ -425,11 +448,18 @@ a:hover {
 .job-info .status {
   justify-self: start;
 }
+/* margin-top:auto pushes the author line, and the actions under it, to the
+   bottom of the card, so cards in a row line up whatever their content. */
+.job-author {
+  margin: auto 0 1rem;
+  color: var(--grey-500);
+  font-size: 0.8rem;
+}
+
 .job-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: auto;
   border-top: 1px solid var(--grey-100);
   padding-top: 1rem;
 }
@@ -559,6 +589,18 @@ a:hover {
   }
   .navbar-name {
     display: none;
+  }
+  .org-switcher-label {
+    display: none;
+  }
+  /* Same reason as .navbar-user above: let the select give up width first,
+     since a truncated org name still reads, and a clipped button does not. */
+  .org-switcher,
+  .org-switcher-select {
+    min-width: 0;
+  }
+  .org-switcher-select {
+    max-width: 11rem;
   }
   .job-info {
     grid-template-columns: 1fr;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import customFetch, { getErrorMessage } from '../utils/customFetch';
 import { JobCard, PageBtnContainer, SearchContainer } from '../components';
+import { useDashboardContext } from '../context/DashboardContext';
 import { DEFAULT_JOB_FILTERS } from '../utils/constants';
 
 /**
@@ -8,8 +9,13 @@ import { DEFAULT_JOB_FILTERS } from '../utils/constants';
  *
  * Holds the filter state and refetches whenever it changes. The server does the
  * filtering, sorting and paging, so this page only reports what was asked for.
+ *
+ * It never mentions the active organization: the axios interceptor puts it on
+ * every request and the server scopes the query to it. Switching orgs remounts
+ * this page (see DashboardLayout), which is what refetches the list.
  */
 const AllJobs = () => {
+  const { canWrite } = useDashboardContext();
   const [filters, setFilters] = useState(DEFAULT_JOB_FILTERS);
   const [result, setResult] = useState({ jobs: [], totalJobs: 0, numOfPages: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -110,6 +116,7 @@ const AllJobs = () => {
             {...job}
             onDelete={handleDelete}
             isDeleting={deletingId === job._id}
+            canWrite={canWrite}
           />
         ))}
       </div>

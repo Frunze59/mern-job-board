@@ -8,3 +8,4 @@ export { default as JobCard } from './JobCard.jsx';
 export { default as SearchContainer } from './SearchContainer.jsx';
 export { default as PageBtnContainer } from './PageBtnContainer.jsx';
 export { default as OrgSwitcher } from './OrgSwitcher.jsx';
+export { default as ReadOnlyNotice } from './ReadOnlyNotice.jsx';
