@@ -2,15 +2,17 @@ import { NavLink } from 'react-router-dom';
 import { Logo } from './index';
 import { useDashboardContext } from '../context/DashboardContext';
 
-// Stats and Team are built in steps 32 and 30. Their routes exist and the
-// API behind them is finished, but the pages are still placeholders, so they
-// are not advertised here until they render something real.
+// Stats is built in step 32. Its route exists and the API behind it is
+// finished, but the page is still a placeholder, so it is not advertised here
+// until it renders something real.
 //
 // `writeOnly` links are hidden for a viewer: the page behind them only offers
-// an action the server would refuse.
+// an action the server would refuse. Team is not one of them -- a viewer may
+// read the members list, and may create an organization of their own.
 const links = [
   { text: 'all jobs', path: 'all-jobs' },
   { text: 'add job', path: 'add-job', writeOnly: true },
+  { text: 'team', path: 'team' },
   { text: 'profile', path: 'profile' },
 ];
 

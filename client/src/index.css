@@ -530,6 +530,119 @@ a:hover {
 }
 
 /* ==========================================================================
+   Team page
+   ========================================================================== */
+.page-subtitle {
+  margin: 0.35rem 0 1.5rem;
+  color: var(--grey-500);
+  font-size: 0.95rem;
+}
+
+/* The team page stacks a table and two forms; this is the gap between them. */
+.team-page > .form {
+  margin-top: 2rem;
+}
+
+.notice {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--primary-500);
+  background: var(--white);
+  border-radius: var(--border-radius);
+  color: var(--grey-700);
+  font-size: 0.9rem;
+}
+
+/* A table is the one layout that does not fit a narrow screen, so it scrolls
+   sideways on its own rather than stretching the page. */
+.table-scroll {
+  overflow-x: auto;
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.data-table th,
+.data-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.data-table th {
+  color: var(--grey-500);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--grey-200);
+}
+.data-table tbody tr + tr td {
+  border-top: 1px solid var(--grey-100);
+}
+
+.tag {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--grey-100);
+  color: var(--grey-500);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Roles are colour-coded the same way job statuses are, so "what may this
+   person do" reads at a glance. */
+.role {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.role-owner {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+.role-recruiter {
+  background: var(--yellow-light);
+  color: var(--yellow-dark);
+}
+.role-viewer {
+  background: var(--grey-100);
+  color: var(--grey-500);
+}
+
+.invite-result {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--grey-100);
+}
+.invite-summary {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--grey-700);
+}
+.invite-link-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+.invite-link-row .form-input {
+  min-width: 0;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.85rem;
+}
+.invite-link-row .btn {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 @media (max-width: 900px) {
@@ -576,6 +689,9 @@ a:hover {
   }
   .form-wide {
     padding: 1.25rem;
+  }
+  .invite-link-row {
+    flex-direction: column;
   }
   .page-status {
     margin-left: 0;
