@@ -22,6 +22,17 @@ import errorHandlerMiddleware from './middleware/errorHandler.js';
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Render ends HTTPS at its proxy and forwards plain HTTP, recording the
+// original scheme in X-Forwarded-Proto. Trusting that one hop is what makes
+// req.protocol read "https", and the invitation controller builds links from
+// it. Without this, live invite links began with http:// and sent the raw
+// token over an unencrypted first hop before Render redirected.
+//
+// Exactly one hop, not `true`: trusting every hop would let a client forge
+// the header through any chain. With no proxy in front (local development),
+// a spoofed header can only change the link returned to that same caller.
+app.set('trust proxy', 1);
+
 app.use(express.json());
 
 app.get('/api/v1/health', (req, res) => {

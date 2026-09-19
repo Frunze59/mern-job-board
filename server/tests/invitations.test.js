@@ -94,6 +94,21 @@ describe('invitations', () => {
       }
     });
 
+    it('builds an https link behind a TLS-terminating proxy, like Render', async () => {
+      // Found on the live deploy, not locally: Render ends HTTPS at its proxy
+      // and forwards plain HTTP, announcing the original scheme in
+      // X-Forwarded-Proto. Without trusting that header the link came out as
+      // http://, so the raw token's first hop was unencrypted before Render's
+      // redirect caught it. CLIENT_URL is left unset, as it is in production.
+      const { owner, orgId } = await makeOrg();
+
+      const res = await invite(owner.as, orgId, { email: 'a@example.com', role: 'viewer' })
+        .set('X-Forwarded-Proto', 'https');
+
+      expect(res.status).toBe(201);
+      expect(res.body.inviteUrl).toMatch(/^https:\/\/[^/]+\/invitations\/[0-9a-f]{64}$/);
+    });
+
     it('recruiter and viewer get 403 when inviting', async () => {
       const { recruiter, viewer, orgId } = await makeOrg();
 

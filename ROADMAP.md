@@ -77,5 +77,5 @@ smaller half of the grade.
 
 - [x] **33. Docs** — finalise the three ADRs, README: new endpoints + shapes, "Running the seed and migration scripts", link to `docs/adr/`.
 - [x] **34. Deploy** — push branch, open the PR, merge, confirm the Render log shows the migration summary, hit `/stats` on the live URL.
-- [ ] **35. Regression on live** — register → create job → filter → paginate → delete, plus one invite flow end-to-end.
+- [x] **35. Regression on live** — register → create job → filter → paginate → delete, plus one invite flow end-to-end.
 - [ ] **36. Submit** — Loom (invite flow, `/stats` response, one ADR decision), PR link, one-paragraph self-review.
