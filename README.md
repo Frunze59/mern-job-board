@@ -579,24 +579,34 @@ rejections between two accounts, logout, the protected-route redirect and the
 404 page. Deep links and a hard refresh resolve correctly, and the browser
 console is clean.
 
-**v2, against a seeded database:** the three-role dataset from the seed script,
-driven in a browser at both desktop and 375px widths.
+**v2, against the live deployment** (19 September 2026), as a two-person demo
+with one of us registering and setting passwords by hand:
 
-- The same account in two orgs sees write controls in one and not the other,
-  and the list refetches on switch
-- A viewer typing `/dashboard/add-job` gets an explanation, and the API refuses
-  the same call directly
-- An owner issues an invite link; a failed second invite leaves the first link
-  on screen, because that token exists in one response and nowhere else
-- All seven states of the accept page: unknown token, spent token, a brand-new
-  account created and landed straight in the org, an address that already has
-  an account, signed in as the wrong person, the confirm branch, and recovery
-  from a stale session without losing the invite URL
-- Stats tiles, bars and table match the raw JSON, including the tie between two
-  companies on the same count being broken by name
+- A fresh registration lands in its own `Personal` org as owner
+- Create through the form, then filter by status, search, sort a–z and page
+  through 15 jobs; delete with the two-step confirm
+- Stats add up to the job count, and three companies tied on 3 are listed
+  alphabetically, as the brief specifies
+- A Personal workspace offers no invite form; creating `Demo Recruiting`
+  switches to it and the invite form appears
+- An invite link issued for a viewer. Opened while still signed in as the
+  owner, the page named the mismatch before sending anything, and signing out
+  kept the invite URL
+- The new viewer landed directly in the team org, with no write controls, and
+  with jobs showing who added them
+- **From that viewer's own session, POST, PATCH and DELETE each returned 403**;
+  hiding the buttons is not what stops them
+- The spent link answers "already used"
 
-The v2 live pass is the same list run against the deployment once this branch
-is merged.
+**One bug was found this way that no local run could show.** Invite links came
+out as `http://`: Render ends HTTPS at its proxy, and Express was not trusting
+the `X-Forwarded-Proto` header that says so. Render's redirect made the link
+work, but the raw token's first hop was unencrypted. Fixed with
+`app.set('trust proxy', 1)` and a test that fails without it. The existing test
+had allowed either scheme (`https?`), which is why the suite never objected.
+
+v2 was also driven against the seeded three-role database at desktop and 375px
+widths before deploying, including every state of the accept page.
 
 ### What I skipped
 
