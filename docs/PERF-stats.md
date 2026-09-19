@@ -22,8 +22,19 @@ BENCH_URL=http://localhost:5099 npm run bench:stats
 
 ## Result
 
-Measured 18 September 2026, MacBook Pro (Apple silicon, macOS 27), Node 22,
-MongoDB 7 in Docker on the same machine. 200 requests after 10 warmup.
+Measured 18 September 2026 at commit `bffe4b8`, on a MacBook Pro (Apple
+silicon, macOS 27), Node 22, MongoDB 7 in Docker on the same machine.
+200 requests after 10 warmup.
+
+The commit is recorded so the figure stays checkable rather than merely dated.
+Nothing on the measured path has changed since; that is verifiable with:
+
+```bash
+git log bffe4b8..HEAD -- server/controllers/statsController.js server/models/Job.js
+```
+
+which is empty. If that command ever prints a commit, re-run the benchmark
+before trusting the numbers below.
 
 ```
 [bench] GET /api/v1/stats   http://localhost:5099

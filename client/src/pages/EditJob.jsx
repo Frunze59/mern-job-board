@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import customFetch, { getErrorMessage } from '../utils/customFetch';
-import { JobForm } from '../components';
+import { JobForm, ReadOnlyNotice } from '../components';
+import { useDashboardContext } from '../context/DashboardContext';
 
 /** Milliseconds the success message stays up before returning to the list. */
 const REDIRECT_DELAY_MS = 1200;
@@ -18,6 +19,7 @@ const REDIRECT_DELAY_MS = 1200;
 const EditJob = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { canWrite } = useDashboardContext();
 
   const [job, setJob] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,6 +61,12 @@ const EditJob = () => {
     await customFetch.patch(`/jobs/${id}`, values);
     setSavedAt(Date.now());
   };
+
+  // Reached by typing the URL, or by switching to an org where this account
+  // is a viewer while the page is open.
+  if (!canWrite) {
+    return <ReadOnlyNotice />;
+  }
 
   if (isLoading) {
     return <p className="empty-state">Loading job...</p>;

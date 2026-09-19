@@ -17,9 +17,9 @@ request's own origin, which is right in production because the API serves the
 client.
 
 Only the token's SHA-256 hash is stored, so a leaked database cannot be turned
-into memberships. Tokens expire in 7 days and are single-use, and re-inviting
-an address supersedes any pending invitation, so a lost link can be reissued
-and only the newest one works.
+into memberships. Tokens expire in 7 days and are single-use; re-inviting an
+address supersedes any pending invitation, so a lost link can be reissued and
+only the newest works.
 
 `POST /invitations/:token/accept` branches on the request, not the user:
 
@@ -38,7 +38,8 @@ people who have no account.
 
 ## Consequences
 
-The accept page has two branches, chosen by whether a token is in storage.
+The accept page shows three states, chosen by comparing the invited address to
+the stored session, so the wrong account is caught before any request.
 Signed-out existing users get one extra step. The token rides in a URL, so it
 lands in history and logs; expiry, single use and hashed storage limit what a
 leak is worth.
