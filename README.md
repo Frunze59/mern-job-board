@@ -11,6 +11,8 @@ roles, invitations, an aggregated stats endpoint and a migration that moves
 the v1 data into the new shape. The v1 behaviour still works unchanged.
 
 - **Live app:** https://mern-job-board-e1td.onrender.com
+- **Walkthrough (5 min):** https://www.loom.com/share/8a97a1feba2d4c0395e84e460eaebfa2
+  — an invitation end to end, the stats response, and the reasoning behind ADR-003
 - **Note:** the app is on Render's free tier, so the first request after a
   period of inactivity wakes the service and can take up to a minute.
 - **Repo:** https://github.com/Frunze59/mern-job-board
